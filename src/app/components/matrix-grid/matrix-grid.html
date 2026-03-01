@@ -1,0 +1,20 @@
+@if (matrix().grid.length > 0) {
+  <div class="matrix-canvas" role="grid">
+    @for (row of matrix().grid; track $index; let rIdx = $index) {
+      @for (cell of row; track $index; let cIdx = $index) {
+        @let details = matrix().legend[cell.symbolKey];
+        
+        <div 
+          class="cell"
+          [style.background-color]="details.backgroundColor"
+          [style.color]="details.innerColor"
+          (click)="onCellClick(rIdx, cIdx)"
+          tabindex="0">
+          {{ details.symbol }}
+        </div>
+      }
+    }
+  </div>
+} @else {
+  <div class="empty-state">No pattern data loaded.</div>
+}
