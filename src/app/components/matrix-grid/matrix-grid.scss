@@ -1,30 +1,51 @@
-.matrix-canvas {
+/* container for the grid: columns are set inline via template */
+.grid-container {
   display: grid;
-  /* Columns are driven by the signal via host binding */
-  grid-template-columns: repeat(var(--matrix-cols, 1), 24px);
+  gap: 0;
   width: fit-content;
-  border: 0.5px solid #e0e0e0;
+  margin: 20px auto;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
 }
 
-.cell {
-  width: 24px;
-  height: 24px;
+.stitch-square {
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  font-family: 'Courier New', monospace;
+  font-size: 10px;
   cursor: pointer;
-  border: 0.5px solid rgba(0,0,0,0.05);
-  transition: transform 0.1s ease;
+  border: 0.1px solid rgba(0, 0, 0, 0.05);
+  opacity: 0.8;
+  transition: all 0.15s ease-in-out;
 
   &:hover {
     outline: 2px solid #2196F3;
     z-index: 10;
-    transform: scale(1.1);
+    opacity: 1;
   }
 
-  &:focus {
-    outline: 2px solid #ff4081;
+  &.is-active {
+    opacity: 1;
+    z-index: 5;
+    outline: 2px solid #333;
+    outline-offset: -2px;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+    filter: saturate(1.5) brightness(1.1);
+  }
+
+  &.mid-row {
+    border-top: 2px solid rgba(220, 50, 50, 0.7) !important;
+  }
+
+  &.mid-col {
+    border-left: 2px solid rgba(220, 50, 50, 0.7) !important;
+  }
+
+  // Corner cell where both lines cross
+  &.mid-row.mid-col {
+    border-top: 2px solid rgba(220, 50, 50, 0.7) !important;
+    border-left: 2px solid rgba(220, 50, 50, 0.7) !important;
   }
 }
+

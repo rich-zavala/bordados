@@ -54,6 +54,27 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+## Importing FlossCross Files
+
+The application now supports importing patterns from [FlossCross](https://flosscross.com) `.fcjson` export files. To add a project:
+
+1. Open the **Project Library** controls on the left panel.
+2. Enter an optional project name (it will replace the title inside the file).
+3. Click **Select .fcjson File** and choose a FlossCross export.
+
+The app will convert the file to its internal compressed schema and store it in localStorage. You can also paste existing compressed JSON manually in the **Manual Import** section.
+
+### Managing Projects
+
+Once a pattern is loaded the library selector shows all available projects. Two new
+buttons appear next to the dropdown:
+
+* **Rename** – prompt for a new title and update the stored entry.
+* **Delete** – remove the selected project from localStorage.
+
+These operations are handled entirely in the `PatternManagerService` and keep the
+interface lightweight and responsive.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

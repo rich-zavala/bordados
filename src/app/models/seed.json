@@ -1,0 +1,67 @@
+{
+  "metadata": {
+    "rows": 100,
+    "cols": 80,
+    "title": "Black Dog on White Blanket with Blue Towel"
+  },
+  "legend": {
+    "BG01": { "symbol": ".", "shapeType": "square", "innerColor": "#E6E2D8", "backgroundColor": "#F4F1E9" },
+    "BG02": { "symbol": ",", "shapeType": "square", "innerColor": "#D9CDB8", "backgroundColor": "#EBE2D0" },
+    "BG03": { "symbol": ":", "shapeType": "square", "innerColor": "#BFAE9F", "backgroundColor": "#D9C5B2" },
+    "CAB01": { "symbol": "#", "shapeType": "square", "innerColor": "#4A2C1D", "backgroundColor": "#5D3A26" },
+    "CAB02": { "symbol": "=", "shapeType": "square", "innerColor": "#2F1911", "backgroundColor": "#3F261B" },
+    "VSE01": { "symbol": "*", "shapeType": "square", "innerColor": "#3E1606", "backgroundColor": "#4C1C07" },
+    "VSE02": { "symbol": "!", "shapeType": "square", "innerColor": "#6E231F", "backgroundColor": "#7F2C27" },
+    "OBJ01": { "symbol": "+", "shapeType": "square", "innerColor": "#BC9B78", "backgroundColor": "#D0B293" },
+    "TWL01": { "symbol": "~", "shapeType": "square", "innerColor": "#7DA1C4", "backgroundColor": "#A5C5E8" },
+    "TWL02": { "symbol": "-", "shapeType": "square", "innerColor": "#6F8EA9", "backgroundColor": "#8BAFD1" },
+    "TWL03": { "symbol": "'", "shapeType": "square", "innerColor": "#546F89", "backgroundColor": "#6B89A7" },
+    "FUR01": { "symbol": "@", "shapeType": "square", "innerColor": "#1A1A1A", "backgroundColor": "#2C2C2C" },
+    "FUR02": { "symbol": "$", "shapeType": "square", "innerColor": "#0D0D0D", "backgroundColor": "#1A1A1A" },
+    "FUR03": { "symbol": "%", "shapeType": "square", "innerColor": "#333333", "backgroundColor": "#454545" },
+    "EYE01": { "symbol": "o", "shapeType": "square", "innerColor": "#6E4D3E", "backgroundColor": "#835C4A" },
+    "EYE02": { "symbol": "O", "shapeType": "square", "innerColor": "#EBDBC3", "backgroundColor": "#FFE8CC" },
+    "NOS01": { "symbol": "^", "shapeType": "square", "innerColor": "#1A1A1A", "backgroundColor": "#262626" },
+    "NOS02": { "symbol": "&", "shapeType": "square", "innerColor": "#0A0A0A", "backgroundColor": "#141414" },
+    "PAW01": { "symbol": ";", "shapeType": "square", "innerColor": "#80766A", "backgroundColor": "#998E82" },
+    "SHT01": { "symbol": "\"", "shapeType": "square", "innerColor": "#D9D9D9", "backgroundColor": "#F2F2F2" },
+    "SHT02": { "symbol": "_", "shapeType": "square", "innerColor": "#CCCCCC", "backgroundColor": "#E0E0E0" },
+    "SHT03": { "symbol": "|", "shapeType": "square", "innerColor": "#BDBDBD", "backgroundColor": "#D1D1D1" }
+  },
+  "grid": [
+    ...Array.from({ length: 30 }, (_, r) => 
+      Array.from({ length: 80 }, (_, c) => {
+        if (c < 30) return { symbolKey: "TWL02" };
+        if (c < 60) {
+            if (r % 5 === 0) return { symbolKey: "CAB02" };
+            return { symbolKey: "CAB01" };
+        }
+        if (r > 15 && c > 60 && c < 75) return { symbolKey: "VSE01" };
+        if (r > 20 && c > 70) return { symbolKey: "VSE02" };
+        return { symbolKey: "OBJ01" };
+      })
+    ),
+    ...Array.from({ length: 30 }, (_, r) => 
+      Array.from({ length: 80 }, (_, c) => {
+        if (c < 25) return { symbolKey: "TWL01" };
+        if (c > 35 && c < 60) return { symbolKey: "FUR01" };
+        if (c > 60) return { symbolKey: "SHT02" };
+        return { symbolKey: "WOD" };
+      })
+    ),
+    ...Array.from({ length: 20 }, (_, r) => 
+      Array.from({ length: 80 }, (_, c) => {
+        if (c < 20) return { symbolKey: "TWL03" };
+        if (c > 30 && c < 50) return { symbolKey: "FUR02" };
+        if (c > 50 && c < 70) return { symbolKey: "PAW01" };
+        return { symbolKey: "SHT03" };
+      })
+    ),
+    ...Array.from({ length: 20 }, (_, r) => 
+      Array.from({ length: 80 }, (_, c) => {
+        if (c > 15) return { symbolKey: "SHT01" };
+        return { symbolKey: "BG02" };
+      })
+    )
+  ]
+}

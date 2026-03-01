@@ -1,0 +1,138 @@
+<canvas #confettiCanvas class="confetti-canvas"></canvas>
+
+<div class="floating-container">
+  <button class="fab" (click)="isOpen.set(!isOpen())" [class.is-open]="isOpen()">
+    <span class="fab-icon">{{ isOpen() ? '✕' : '🧵' }}</span>
+  </button>
+
+  <div class="panel" *ngIf="isOpen()">
+    <div class="tabs">
+      <button [class.active]="activeTab() === 'project'"    (click)="activeTab.set('project')">📁 Proyecto</button>
+      <button [class.active]="activeTab() === 'statistics'" (click)="activeTab.set('statistics')">📊 Stats</button>
+      <button [class.active]="activeTab() === 'aime'"       (click)="activeTab.set('aime')">💌 Aime</button>
+    </div>
+
+    <!-- PROJECT -->
+    <div class="tab-content" *ngIf="activeTab() === 'project'">
+      <div class="field">
+        <label>Proyecto activo</label>
+        <select [ngModel]="activeId()" (ngModelChange)="onSelect($event)">
+          @for (id of projectList(); track id) {
+            <option [value]="id">{{ id }}</option>
+          }
+        </select>
+      </div>
+      <div class="row-actions" *ngIf="!isRenaming">
+        <button class="text-btn" (click)="startRename()">✏️ Renombrar</button>
+        <button class="text-btn danger" (click)="deleteCurrent()">🗑️ Eliminar</button>
+      </div>
+      <div class="field" *ngIf="isRenaming">
+        <input [(ngModel)]="renameValue"
+               (keyup.enter)="confirmRename()"
+               (keyup.escape)="cancelRename()"
+               autofocus />
+        <div class="row-actions">
+          <button class="text-btn confirm" (click)="confirmRename()">✔ Guardar</button>
+          <button class="text-btn"         (click)="cancelRename()">✘ Cancelar</button>
+        </div>
+      </div>
+      <hr />
+      <div class="field">
+        <label>Importar .fcjson</label>
+        <input type="text" [(ngModel)]="importName" placeholder="Nombre del proyecto (opcional)" />
+        <input type="file" #fileInput (change)="onFcjsonSelected($event)"
+               accept=".fcjson,application/json" hidden />
+        <button class="upload-btn" (click)="fileInput.click()">📂 Seleccionar archivo</button>
+      </div>
+    </div>
+
+    <!-- STATISTICS -->
+    <div class="tab-content" *ngIf="activeTab() === 'statistics'">
+      <div class="big-ring-wrap">
+        <svg class="big-ring" viewBox="0 0 120 120">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="#a6e3a1"/>
+              <stop offset="100%" stop-color="#89b4fa"/>
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="60" r="54" fill="none" stroke="#313244" stroke-width="8"/>
+          <circle cx="60" cy="60" r="54" fill="none" stroke="url(#ringGrad)" stroke-width="8"
+            stroke-linecap="round"
+            [style.stroke-dashoffset]="stats().strokeDashoffset"
+            style="stroke-dasharray: 339.3; transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1);"
+            transform="rotate(-90 60 60)"/>
+        </svg>
+        <div class="big-ring-label">
+          <span class="big-pct" [class.done]="stats().pct === 100">{{ stats().pct }}%</span>
+          <span class="big-pct-sub">completado</span>
+        </div>
+        <div class="celebration" *ngIf="stats().pct === 100">🎉 ¡Terminado!</div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card green">
+          <span class="stat-value">{{ stats().done }}</span>
+          <span class="stat-label">✅ Hechos</span>
+        </div>
+        <div class="stat-card muted">
+          <span class="stat-value">{{ stats().pending }}</span>
+          <span class="stat-label">⏳ Pendientes</span>
+        </div>
+        <div class="stat-card blue">
+          <span class="stat-value">{{ stats().daysInWork || '—' }}</span>
+          <span class="stat-label">📅 Días activos</span>
+        </div>
+      </div>
+
+      <div class="start-date" *ngIf="stats().startDate">
+        Iniciado el {{ stats().startDate | date:'mediumDate' }}
+      </div>
+      <hr />
+      <div class="color-list">
+        <div class="color-row" *ngFor="let c of stats().byColor">
+          <span class="swatch" [style.background]="c.color"></span>
+          <div class="color-info">
+            <span class="color-name">{{ c.name }}</span>
+            <div class="color-bar-wrap">
+              <div class="color-bar"
+                   [style.width.%]="c.total > 0 ? (c.done / c.total) * 100 : 0"
+                   [style.background]="c.color">
+              </div>
+            </div>
+          </div>
+          <span class="color-pct">
+            {{ c.total > 0 ? ((c.done / c.total) * 100 | number:'1.0-0') : 0 }}%
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AIME -->
+    <div class="tab-content aime-tab" *ngIf="activeTab() === 'aime'">
+      <div class="letter-scene" [class.is-open]="letterOpen()">
+        <div class="envelope" (click)="!letterOpen() && letterOpen.set(true)">
+          <div class="envelope-flap"></div>
+          <div class="envelope-body">
+            <div class="envelope-heart">💗</div>
+          </div>
+          <button class="open-btn" *ngIf="!letterOpen()">Abrir</button>
+        </div>
+        <div class="letter" *ngIf="letterOpen()">
+          <div class="letter-inner">
+            <div class="letter-rose">🌹</div>
+            <p class="letter-salutation">Mi amor,</p>
+            <p class="letter-body">
+              Aime, te amo con todo mi corazón.<br><br>
+              Eres mi razón para ser mejor<br>
+              y mi motivación más grande.<br><br>
+              Gracias por elegirme.
+            </p>
+            <p class="letter-signature">Con todo mi amor, ♥</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

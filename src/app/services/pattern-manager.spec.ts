@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { PatternManager } from './pattern-manager';
+import { PatternManagerService } from './pattern-manager';
 
-describe('PatternManager', () => {
-  let service: PatternManager;
+describe('PatternManagerService', () => {
+  let service: PatternManagerService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(PatternManager);
+    service = TestBed.inject(PatternManagerService);
   });
 
   it('should be created', () => {

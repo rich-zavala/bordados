@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MatrixGrid } from './matrix-grid';
+import { MatrixGridComponent } from './matrix-grid';
 
-describe('MatrixGrid', () => {
-  let component: MatrixGrid;
-  let fixture: ComponentFixture<MatrixGrid>;
+describe('MatrixGridComponent', () => {
+  let component: MatrixGridComponent;
+  let fixture: ComponentFixture<MatrixGridComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatrixGrid]
+      imports: [MatrixGridComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(MatrixGrid);
+    fixture = TestBed.createComponent(MatrixGridComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
