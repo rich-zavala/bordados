@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "bordados-aime",
+    "staging": "bordados-aime"
+  },
+  "targets": {},
+  "etags": {}
+}

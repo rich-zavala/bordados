@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { MatrixGridComponent } from './components/matrix-grid/matrix-grid';
 import { ProjectControlsComponent } from './components/project-controls/project-controls';
+import { PatternManagerService } from './services/pattern-manager';
 
 @Component({
   selector: 'app-root',
@@ -12,5 +13,6 @@ import { ProjectControlsComponent } from './components/project-controls/project-
   styleUrls: ['./app.scss']
 })
 export class App {
+  protected readonly patternManager = inject(PatternManagerService);
   protected readonly title = signal('bordados');
 }

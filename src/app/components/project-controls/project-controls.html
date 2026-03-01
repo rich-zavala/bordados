@@ -42,7 +42,12 @@
         <input type="text" [(ngModel)]="importName" placeholder="Nombre del proyecto (opcional)" />
         <input type="file" #fileInput (change)="onFcjsonSelected($event)"
                accept=".fcjson,application/json" hidden />
-        <button class="upload-btn" (click)="fileInput.click()">📂 Seleccionar archivo</button>
+        <div class="row-actions">
+          <button class="upload-btn" (click)="fileInput.click()">📂 Seleccionar archivo</button>
+          <button class="btn-export" (click)="exportCurrent()" [disabled]="!pattern().g.length">
+            Exportar (.fcjson)
+          </button>
+        </div>
       </div>
     </div>
 

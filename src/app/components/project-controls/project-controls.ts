@@ -164,19 +164,29 @@ export class ProjectControlsComponent implements OnDestroy {
       this.manager.deleteProject(current);
     }
   }
+
+  exportCurrent() {
+    this.manager.exportProject();
+  }
+
   async onFcjsonSelected(event: any) {
     const file = event.target.files?.[0] as File | undefined;
     if (!file) return;
+
     try {
       const text = await file.text();
       const pattern = this.ingestor.parseFcjson(text);
       if (this.importName.trim()) {
         pattern.m.t = this.importName.trim().toLowerCase().replace(/\s+/g, '-');
       }
-      await this.manager.importNewProject(JSON.stringify(pattern));
+
+      const importedTitle = await this.manager.importNewProject(JSON.stringify(pattern));
+      this.manager.notify('Proyecto cargado: ' + importedTitle);
       this.importName = '';
     } catch (e: any) {
-      alert('Error: ' + (e.message || e));
+      const message = e?.message || String(e);
+      console.error('Import failed:', e);
+      this.manager.notify('Error al importar: ' + message, 2800);
     } finally {
       if (this.fileInput) this.fileInput.nativeElement.value = '';
     }

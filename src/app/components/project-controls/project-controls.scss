@@ -166,6 +166,7 @@
 }
 
 .upload-btn {
+  flex: 1;
   padding: 10px;
   background: #89b4fa18;
   border: 1px dashed #89b4fa;
@@ -177,6 +178,25 @@
   cursor: pointer;
   transition: background 0.15s;
   &:hover { background: #89b4fa30; }
+}
+
+.btn-export {
+  flex: 1;
+  background-color: #27ae60;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+
+  &:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+  }
 }
 
 hr {
