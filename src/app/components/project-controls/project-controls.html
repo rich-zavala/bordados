@@ -9,6 +9,7 @@
     <div class="tabs">
       <button [class.active]="activeTab() === 'project'"    (click)="activeTab.set('project')">📁 Proyecto</button>
       <button [class.active]="activeTab() === 'statistics'" (click)="activeTab.set('statistics')">📊 Stats</button>
+      <button [class.active]="activeTab() === 'config'"     (click)="activeTab.set('config')">⚙️ Config</button>
       <button [class.active]="activeTab() === 'aime'"       (click)="activeTab.set('aime')">💌 Aime</button>
     </div>
 
@@ -53,62 +54,96 @@
 
     <!-- STATISTICS -->
     <div class="tab-content" *ngIf="activeTab() === 'statistics'">
-      <div class="big-ring-wrap">
-        <svg class="big-ring" viewBox="0 0 120 120">
-          <defs>
-            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%"   stop-color="#a6e3a1"/>
-              <stop offset="100%" stop-color="#89b4fa"/>
-            </linearGradient>
-          </defs>
-          <circle cx="60" cy="60" r="54" fill="none" stroke="#313244" stroke-width="8"/>
-          <circle cx="60" cy="60" r="54" fill="none" stroke="url(#ringGrad)" stroke-width="8"
-            stroke-linecap="round"
-            [style.stroke-dashoffset]="stats().strokeDashoffset"
-            style="stroke-dasharray: 339.3; transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1);"
-            transform="rotate(-90 60 60)"/>
-        </svg>
-        <div class="big-ring-label">
-          <span class="big-pct" [class.done]="stats().pct === 100">{{ stats().pct }}%</span>
-          <span class="big-pct-sub">completado</span>
-        </div>
-        <div class="celebration" *ngIf="stats().pct === 100">🎉 ¡Terminado!</div>
-      </div>
+      <div class="stats-container">
+        @if (stats(); as data) {
+          <div class="overall-progress">
+            <div class="progress-info">
+              <span>Progreso Total</span>
+              <strong>{{ data.overallPercent }}%</strong>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="data.overallPercent"></div>
+            </div>
+            <small>{{ data.done }} de {{ data.total }} puntadas · {{ data.remaining }} pendientes</small>
+          </div>
 
-      <div class="stat-grid">
-        <div class="stat-card green">
-          <span class="stat-value">{{ stats().done }}</span>
-          <span class="stat-label">✅ Hechos</span>
-        </div>
-        <div class="stat-card muted">
-          <span class="stat-value">{{ stats().pending }}</span>
-          <span class="stat-label">⏳ Pendientes</span>
-        </div>
-        <div class="stat-card blue">
-          <span class="stat-value">{{ stats().daysInWork || '—' }}</span>
-          <span class="stat-label">📅 Días activos</span>
-        </div>
-      </div>
+          <hr />
 
-      <div class="start-date" *ngIf="stats().startDate">
-        Iniciado el {{ stats().startDate | date:'mediumDate' }}
-      </div>
-      <hr />
-      <div class="color-list">
-        <div class="color-row" *ngFor="let c of stats().byColor">
-          <span class="swatch" [style.background]="c.color"></span>
-          <div class="color-info">
-            <span class="color-name">{{ c.name }}</span>
-            <div class="color-bar-wrap">
-              <div class="color-bar"
-                   [style.width.%]="c.total > 0 ? (c.done / c.total) * 100 : 0"
-                   [style.background]="c.color">
+          <label class="stats-label">Progreso por Color</label>
+          <cdk-virtual-scroll-viewport itemSize="60" class="stats-viewport">
+            <div *cdkVirtualFor="let s of data.symbols" class="stats-row">
+              <div class="swatch" [style.background]="s.color">
+                {{ s.char }}
+              </div>
+              <div class="stat-details">
+                <div class="details-top">
+                  <strong>{{ s.percent }}%</strong>
+                  <span>{{ s.done }}/{{ s.total }}</span>
+                </div>
+                <div class="mini-track">
+                  <div class="mini-fill" [style.width.%]="s.percent" [style.background]="s.color"></div>
+                </div>
               </div>
             </div>
+          </cdk-virtual-scroll-viewport>
+        } @else {
+          <div class="empty-state">Carga un proyecto para ver estadísticas</div>
+        }
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="tab-content config-tab" *ngIf="activeTab() === 'config'">
+      <div class="config-sidebar">
+        <div class="config-header">
+          <h3>Configuración</h3>
+        </div>
+
+        <div class="config-content">
+          <div class="setting-group">
+            <label>Almacenamiento</label>
+            <div class="storage-switch">
+              <button [class.active]="storageMode() === 'local'" (click)="setStorage('local')">Local</button>
+              <button [class.active]="storageMode() === 'cloud'" (click)="setStorage('cloud')">Nube</button>
+            </div>
           </div>
-          <span class="color-pct">
-            {{ c.total > 0 ? ((c.done / c.total) * 100 | number:'1.0-0') : 0 }}%
-          </span>
+
+          <nav class="config-nav">
+            <button [class.active]="activeConfigTab() === 'view'" (click)="setConfigTab('view')">Visual</button>
+            <button [class.active]="activeConfigTab() === 'symbols'" (click)="setConfigTab('symbols')">Símbolos</button>
+          </nav>
+
+          @if (activeConfigTab() === 'view') {
+            <section class="config-section setting-group">
+              <label>Tamaño de punto: {{ pixelSize() }}px</label>
+              <input class="modern-slider" type="range" min="10" max="60" [value]="pixelSize()" (input)="updatePixelSize($event)">
+
+              <h4>Estilo de Marcado</h4>
+              <div class="style-grid">
+                @for (style of highlightStyles; track style.name; let idx = $index) {
+                  <button
+                    [style]="style.css"
+                    [class.active]="idx === activeHighlightStyle()"
+                    [title]="style.name"
+                    (click)="setHighlightStyle(idx)">
+                  </button>
+                }
+              </div>
+            </section>
+          }
+
+          @if (activeConfigTab() === 'symbols') {
+            <div class="setting-group">
+              <label>Símbolos Activos ({{ activeSymbols().length }})</label>
+              <cdk-virtual-scroll-viewport itemSize="40" class="symbol-viewport">
+                <div *cdkVirtualFor="let sym of activeSymbols()" class="symbol-row">
+                  <input type="checkbox" [checked]="!hiddenSymbols().has(sym.key)" (change)="toggleSymbol(sym.key)">
+                  <div class="color-swatch" [style.background]="sym.color"></div>
+                  <span>{{ sym.char }}</span>
+                </div>
+              </cdk-virtual-scroll-viewport>
+            </div>
+          }
         </div>
       </div>
     </div>

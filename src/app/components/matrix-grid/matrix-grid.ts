@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[style.--matrix-cols]': 'cols()',
+    '[style.--pixel-size.px]': 'pixelSize()',
   }
 })
 export class MatrixGridComponent {
@@ -21,6 +22,7 @@ export class MatrixGridComponent {
   protected readonly isLoading = computed(() => this.patternService.remoteResource.isLoading());
   protected readonly midRow = computed(() => Math.floor((this.matrix().m.r ?? 0) / 2));
   protected readonly midCol = computed(() => Math.floor((this.matrix().m.c ?? 0) / 2));
+  protected readonly pixelSize = this.patternService.pixelSize;
 
   protected onCellClick(row: number, col: number): void {
     const def = this.matrix().l[this.matrix().g[row][col]] as any;
@@ -35,9 +37,19 @@ export class MatrixGridComponent {
   protected getTileStyle(cell: string, row: number, col: number) {
     const p = this.matrix();
     const def = p.l[cell] as any;
+    const hiddenSymbols = this.patternService.hiddenSymbols();
 
     if (cell === '.' || !def || def.isBackground) {
       return { 'background-color': 'transparent', 'pointer-events': 'none' };
+    }
+
+    if (hiddenSymbols.has(cell)) {
+      return {
+        'background-color': def.b,
+        'opacity': '0',
+        'visibility': 'hidden',
+        'pointer-events': 'none',
+      };
     }
 
     const step = p.progress?.[`${row},${col}`] ?? 0;
@@ -48,13 +60,16 @@ export class MatrixGridComponent {
       'opacity': '0.5',
     };
 
-    if (step === 1) return {
-      'background-color': def.b,
-      'color': def.c,
-      'opacity': '0.85',
-      'box-shadow': 'inset 0 0 0 2px rgba(255,200,0,0.8)',
-      'background-image': 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.15) 3px, rgba(255,255,255,0.15) 6px)',
-    };
+    if (step === 1) {
+      const style = this.patternService.highlightStyles[this.patternService.activeHighlightStyle()]?.css ?? '';
+      const parsed = this.cssTextToObject(style);
+      return {
+        'background-color': def.b,
+        'color': def.c,
+        'opacity': '0.85',
+        ...parsed,
+      };
+    }
 
     return {
       'background-color': def.b,
@@ -68,8 +83,26 @@ export class MatrixGridComponent {
     const p = this.matrix();
     const def = p.l[cell] as any;
     if (!def || def.isBackground) return '';
+    if (this.patternService.hiddenSymbols().has(cell)) return '';
     const step = p.progress?.[`${row},${col}`] ?? 0;
     if (step === 1) return '';
     return def.s ?? '';
+  }
+
+  private cssTextToObject(cssText: string): Record<string, string> {
+    return cssText
+      .split(';')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .reduce<Record<string, string>>((accumulator, declaration) => {
+        const separatorIndex = declaration.indexOf(':');
+        if (separatorIndex === -1) return accumulator;
+        const property = declaration.slice(0, separatorIndex).trim();
+        const value = declaration.slice(separatorIndex + 1).trim();
+        if (property && value) {
+          accumulator[property] = value;
+        }
+        return accumulator;
+      }, {});
   }
 }

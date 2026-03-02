@@ -1,20 +1,21 @@
 import {
-  Component, inject, signal, computed,
+  Component, inject, signal,
   ViewChild, ElementRef, OnDestroy
 } from '@angular/core';
-import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { PatternManagerService } from '../../services/pattern-manager';
 import { ProjectIngestorService } from '../../services/project-ingestor.service';
 
-type Tab = 'project' | 'statistics' | 'aime';
+type Tab = 'project' | 'statistics' | 'config' | 'aime';
 
 @Component({
   selector: 'app-project-controls',
   standalone: true,
-  imports: [CommonModule, FormsModule, DecimalPipe, DatePipe],
+  imports: [CommonModule, FormsModule, ScrollingModule],
   templateUrl: './project-controls.html',
-  styleUrl: './project-controls.scss'
+  styleUrls: ['./project-controls.scss']
 })
 export class ProjectControlsComponent implements OnDestroy {
   private manager = inject(PatternManagerService);
@@ -26,9 +27,17 @@ export class ProjectControlsComponent implements OnDestroy {
   activeId = this.manager.activeProjectId;
   projectList = this.manager.projectList;
   pattern = this.manager.pattern;
+  pixelSize = this.manager.pixelSize;
+  hiddenSymbols = this.manager.hiddenSymbols;
+  activeHighlightStyle = this.manager.activeHighlightStyle;
+  highlightStyles = this.manager.highlightStyles;
+  storageMode = this.manager.storageMode;
+  activeSymbols = this.manager.activeSymbols;
+  stats = this.manager.stats;
 
   isOpen = signal<boolean>(false);
   activeTab = signal<Tab>('project');
+  activeConfigTab = signal<'view' | 'symbols'>('view');
   letterOpen = signal<boolean>(false);
   importName = '';
   isRenaming = false;
@@ -51,60 +60,6 @@ export class ProjectControlsComponent implements OnDestroy {
     window.removeEventListener('pattern-complete', this.completeHandler);
     if (this.confettiFrame) cancelAnimationFrame(this.confettiFrame);
   }
-
-  readonly stats = computed(() => {
-    const p = this.pattern();
-    const progress = p.progress ?? {};
-    const legend = p.l as any;
-
-    let total = 0;
-    let done = 0;
-    let inProgress = 0;
-
-    const byColor: Record<string, {
-      name: string; color: string;
-      total: number; done: number; inProgress: number;
-    }> = {};
-
-    for (let r = 0; r < p.g.length; r++) {
-      for (let c = 0; c < p.g[r].length; c++) {
-        const key = p.g[r][c];
-        const def = legend[key];
-        if (!def || def.isBackground) continue;
-        total++;
-        const step = (progress as any)[r + ',' + c] ?? 0;
-        if (step === 2) done++;
-        if (step === 1) inProgress++;
-        if (!byColor[key]) {
-          byColor[key] = { name: def.n ?? key, color: def.b, total: 0, done: 0, inProgress: 0 };
-        }
-        byColor[key].total++;
-        if (step === 2) byColor[key].done++;
-        if (step === 1) byColor[key].inProgress++;
-      }
-    }
-
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-    const strokeDashoffset = 339.3 - (pct / 100) * 339.3;
-
-    const storageKey = 'project_meta_' + p.m.t;
-    let meta = JSON.parse(localStorage.getItem(storageKey) ?? '{}');
-    if (!meta.startDate && done > 0) {
-      meta.startDate = new Date().toISOString();
-      localStorage.setItem(storageKey, JSON.stringify(meta));
-    }
-    const startDate: Date | null = meta.startDate ? new Date(meta.startDate) : null;
-    const daysInWork = startDate
-      ? Math.max(1, Math.ceil((Date.now() - startDate.getTime()) / 86400000))
-      : 0;
-
-    return {
-      total, done, inProgress, pct, strokeDashoffset,
-      pending: total - done - inProgress,
-      startDate, daysInWork,
-      byColor: Object.values(byColor).sort((a: any, b: any) => b.total - a.total)
-    };
-  });
 
   launchConfetti() {
     if (this.confettiActive || !this.confettiCanvas?.nativeElement) return;
@@ -149,6 +104,23 @@ export class ProjectControlsComponent implements OnDestroy {
   }
 
   onSelect(id: string) { this.manager.activeProjectId.set(id); }
+  setStorage(mode: 'local' | 'cloud') {
+    this.manager.setStorageMode(mode);
+  }
+  setConfigTab(tab: 'view' | 'symbols') {
+    this.activeConfigTab.set(tab);
+  }
+  updatePixelSize(event: Event) {
+    const target = event.target as HTMLInputElement | null;
+    if (!target) return;
+    this.manager.setPixelSize(Number(target.value));
+  }
+  setHighlightStyle(index: number) {
+    this.manager.setHighlightStyle(index);
+  }
+  toggleSymbol(symbolKey: string) {
+    this.manager.toggleHiddenSymbol(symbolKey);
+  }
   startRename() { this.renameValue = this.activeId(); this.isRenaming = true; }
   confirmRename() {
     const newName = this.renameValue.trim();

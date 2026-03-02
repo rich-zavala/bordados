@@ -1,12 +1,5 @@
-<app-project-controls></app-project-controls>
-<app-matrix-grid />
-
-@if (patternManager.loading()) {
-	<div class="loading-overlay" role="status" aria-live="polite">
-		<div class="spinner"></div>
-		<p>Sincronizando con la nube...</p>
-	</div>
-}
+<ng-container [ngComponentOutlet]="matrixGridComponent"></ng-container>
+<ng-container [ngComponentOutlet]="projectControlsComponent"></ng-container>
 
 @if (patternManager.statusMessage()) {
 	<div class="status-chip" role="status" aria-live="polite">

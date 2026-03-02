@@ -1,21 +1,19 @@
-import { inject, Injectable, signal } from '@angular/core';
-import {
-  doc,
-  getDoc,
-  setDoc,
-  deleteDoc,
-  collection,
-  getDocs,
-  onSnapshot,
-  orderBy,
-  query,
-} from 'firebase/firestore';
+import { Injectable, signal } from '@angular/core';
+import type { Firestore } from 'firebase/firestore';
 import { PatternMatrix } from '../models/pattern-matrix.model';
-import { FIREBASE_DB } from '../app.config';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyBBERpRKu7Wl5-xaG8huWmJFB1FtI94HIk',
+  authDomain: 'bordados-aime.firebaseapp.com',
+  projectId: 'bordados-aime',
+  storageBucket: 'bordados-aime.firebasestorage.app',
+  messagingSenderId: '442615597637',
+  appId: '1:442615597637:web:2c337694d1946fc929712c',
+};
 
 @Injectable({ providedIn: 'root' })
 export class CloudPatternRepository {
-  private db = inject(FIREBASE_DB);
+  private db: Firestore | null = null;
 
   // Current active pattern signal
   activePattern = signal<PatternMatrix | null>(null);
@@ -24,7 +22,9 @@ export class CloudPatternRepository {
    * Loads a specific pattern by ID (e.g., the title or a UUID)
    */
   async loadPattern(id: string) {
-    const docRef = doc(this.db, 'patterns', id);
+    const db = await this.getDb();
+    const { doc, getDoc } = await import('firebase/firestore');
+    const docRef = doc(db, 'patterns', id);
     const snap = await getDoc(docRef);
 
     if (snap.exists()) {
@@ -41,13 +41,32 @@ export class CloudPatternRepository {
    * We call this inside your PatternManager's click handler.
    */
   async saveProgress(id: string, matrix: PatternMatrix) {
+    const db = await this.getDb();
+    const { doc, setDoc } = await import('firebase/firestore');
     const cloudSafeData = this.toCloudDocument(matrix);
-    const docRef = doc(this.db, 'patterns', id);
+    const docRef = doc(db, 'patterns', id);
     return setDoc(docRef, { ...cloudSafeData, _lastSaved: Date.now() }, { merge: true });
   }
 
+  async updateUserSettings(settings: {
+    pixelSize: number;
+    storageMode: 'cloud' | 'local';
+    activeStyle: number;
+    hiddenSymbols: string[];
+  }) {
+    const db = await this.getDb();
+    const { doc, setDoc } = await import('firebase/firestore');
+    const docRef = doc(db, 'app_settings', 'default');
+    return setDoc(docRef, {
+      ...settings,
+      _updatedAt: Date.now(),
+    }, { merge: true });
+  }
+
   async deletePattern(id: string) {
-    const docRef = doc(this.db, 'patterns', id);
+    const db = await this.getDb();
+    const { doc, deleteDoc } = await import('firebase/firestore');
+    const docRef = doc(db, 'patterns', id);
     return deleteDoc(docRef);
   }
 
@@ -56,7 +75,9 @@ export class CloudPatternRepository {
    */
   async getAvailablePatterns(): Promise<PatternMatrix[]> {
     try {
-      const colRef = collection(this.db, 'patterns');
+      const db = await this.getDb();
+      const { collection, getDocs } = await import('firebase/firestore');
+      const colRef = collection(db, 'patterns');
       const snap = await getDocs(colRef);
       return snap.docs.map((d) => this.toPatternMatrix(d.data()));
     } catch (error) {
@@ -66,19 +87,52 @@ export class CloudPatternRepository {
   }
 
   watchAvailablePatterns(callback: (patterns: PatternMatrix[]) => void): () => void {
-    const colRef = collection(this.db, 'patterns');
-    const sortedQuery = query(colRef, orderBy('_lastSaved', 'desc'));
+    let active = true;
+    let unsubscribe: (() => void) | null = null;
 
-    return onSnapshot(
-      sortedQuery,
-      (snapshot) => {
-        const patterns = snapshot.docs.map((document) => this.toPatternMatrix(document.data()));
-        callback(patterns);
-      },
-      (error) => {
-        console.error('Firestore Listen Error:', error);
-      },
-    );
+    void (async () => {
+      try {
+        const db = await this.getDb();
+        if (!active) return;
+
+        const { collection, onSnapshot, orderBy, query } = await import('firebase/firestore');
+        const colRef = collection(db, 'patterns');
+        const sortedQuery = query(colRef, orderBy('_lastSaved', 'desc'));
+
+        unsubscribe = onSnapshot(
+          sortedQuery,
+          (snapshot) => {
+            const patterns = snapshot.docs.map((document) => this.toPatternMatrix(document.data()));
+            callback(patterns);
+          },
+          (error) => {
+            console.error('Firestore Listen Error:', error);
+          },
+        );
+      } catch (error) {
+        console.error('Firestore listener init failed:', error);
+      }
+    })();
+
+    return () => {
+      active = false;
+      unsubscribe?.();
+      unsubscribe = null;
+    };
+  }
+
+  private async getDb(): Promise<Firestore> {
+    if (this.db) return this.db;
+
+    const appModule = await import('firebase/app');
+    const firestoreModule = await import('firebase/firestore');
+
+    const app = appModule.getApps().length > 0
+      ? appModule.getApp()
+      : appModule.initializeApp(firebaseConfig);
+
+    this.db = firestoreModule.getFirestore(app);
+    return this.db;
   }
 
   private toCloudDocument(matrix: PatternMatrix): Omit<PatternMatrix, 'g'> & { g: string[] } {
