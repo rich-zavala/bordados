@@ -4,7 +4,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ScrollingModule } from '@angular/cdk/scrolling';
 import { PathAnimationStyle, PatternManagerService } from '../../services/pattern-manager';
 import { ProjectIngestorService } from '../../services/project-ingestor.service';
 
@@ -13,7 +12,7 @@ type Tab = 'project' | 'statistics' | 'config' | 'aime';
 @Component({
   selector: 'app-project-controls',
   standalone: true,
-  imports: [CommonModule, FormsModule, ScrollingModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './project-controls.html',
   styleUrls: ['./project-controls.scss']
 })

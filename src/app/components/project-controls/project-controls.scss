@@ -201,6 +201,7 @@
 
 .config-tab {
   padding: 0;
+  overflow: hidden;
 
   h3 {
     margin: 0;
@@ -212,7 +213,7 @@
 
 .config-sidebar {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   min-height: 300px;
   background: #1e1e2e;
   border: 1px solid #313244;
@@ -229,7 +230,7 @@
 
 .config-content {
   padding: 12px;
-  overflow-y: auto;
+  overflow: visible;
   flex: 1;
 }
 
@@ -487,8 +488,13 @@
   }
 }
 
-.symbol-viewport {
-  height: 320px;
+.symbol-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
   width: 100%;
   border: 1px solid #45475a;
   border-radius: 8px;
@@ -574,8 +580,14 @@ hr {
   font-weight: 500;
 }
 
-.stats-viewport {
-  height: 230px;
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 20px;
   border: 1px solid #313244;
   border-radius: 8px;
   background: #252535;

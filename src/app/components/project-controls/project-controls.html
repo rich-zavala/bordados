@@ -70,22 +70,24 @@
           <hr />
 
           <label class="stats-label">Progreso por Color</label>
-          <cdk-virtual-scroll-viewport itemSize="60" class="stats-viewport">
-            <div *cdkVirtualFor="let s of data.symbols" class="stats-row">
-              <div class="swatch" [style.background]="s.color">
-                {{ s.char }}
-              </div>
-              <div class="stat-details">
-                <div class="details-top">
-                  <strong>{{ s.percent }}%</strong>
-                  <span>{{ s.done }}/{{ s.total }}</span>
+          <div class="stats-list">
+            @for (s of data.symbols; track s.key) {
+              <div class="stats-row">
+                <div class="swatch" [style.background]="s.color">
+                  {{ s.char }}
                 </div>
-                <div class="mini-track">
-                  <div class="mini-fill" [style.width.%]="s.percent" [style.background]="s.color"></div>
+                <div class="stat-details">
+                  <div class="details-top">
+                    <strong>{{ s.percent }}%</strong>
+                    <span>{{ s.done }}/{{ s.total }}</span>
+                  </div>
+                  <div class="mini-track">
+                    <div class="mini-fill" [style.width.%]="s.percent" [style.background]="s.color"></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </cdk-virtual-scroll-viewport>
+            }
+          </div>
         } @else {
           <div class="empty-state">Carga un proyecto para ver estadísticas</div>
         }
@@ -165,13 +167,15 @@
           @if (activeConfigTab() === 'symbols') {
             <div class="setting-group">
               <label>Símbolos Activos ({{ activeSymbols().length }})</label>
-              <cdk-virtual-scroll-viewport itemSize="40" class="symbol-viewport">
-                <div *cdkVirtualFor="let sym of activeSymbols()" class="symbol-row">
-                  <input type="checkbox" [checked]="!hiddenSymbols().has(sym.key)" (change)="toggleSymbol(sym.key)">
-                  <div class="color-swatch" [style.background]="sym.color"></div>
-                  <span>{{ sym.char }}</span>
-                </div>
-              </cdk-virtual-scroll-viewport>
+              <div class="symbol-list">
+                @for (sym of activeSymbols(); track sym.key) {
+                  <div class="symbol-row">
+                    <input type="checkbox" [checked]="!hiddenSymbols().has(sym.key)" (change)="toggleSymbol(sym.key)">
+                    <div class="color-swatch" [style.background]="sym.color"></div>
+                    <span>{{ sym.char }}</span>
+                  </div>
+                }
+              </div>
             </div>
           }
         </div>
