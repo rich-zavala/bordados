@@ -7,95 +7,46 @@ export type HighlightStyle = {
   css: string;
 };
 
-const CORE_HIGHLIGHT_STYLES: HighlightStyle[] = [
+export type PathAnimationStyle = 'ghost' | 'numbers';
+
+interface Coord {
+  key: string;
+  r: number;
+  c: number;
+}
+
+const FAVORITE_CORE_STYLES: HighlightStyle[] = [
   { name: 'Classic Blue', css: 'background: rgba(52, 152, 219, 0.4); border: 2px solid #2980b9;' },
   { name: 'Neon Lime', css: 'background: rgba(57, 255, 20, 0.2); box-shadow: inset 0 0 10px #39ff14; border: 1px solid #39ff14;' },
   { name: 'High Contrast Black', css: 'background: #000; opacity: 0.8; border: 1px solid #fff;' },
   { name: 'Deep Red X', css: 'background: linear-gradient(45deg, transparent 45%, #e74c3c 45%, #e74c3c 55%, transparent 55%), linear-gradient(-45deg, transparent 45%, #e74c3c 45%, #e74c3c 55%, transparent 55%);' },
-  { name: 'Frosted Glass', css: 'background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(3px); border: 1px solid rgba(255,255,255,0.5);' },
-  { name: 'Caution Stripes', css: 'background: repeating-linear-gradient(45deg, #f1c40f, #f1c40f 5px, #000 5px, #000 10px); opacity: 0.6;' },
-  { name: 'Inverted', css: 'background: #fff; mix-blend-mode: difference;' },
-  { name: 'Soft Purple Shadow', css: 'box-shadow: inset 0 0 15px #9b59b6; background: rgba(155, 89, 182, 0.1);' },
-  { name: 'Thick Border Only', css: 'background: transparent; border: 4px solid #2c3e50;' },
-  { name: 'Dot Matrix', css: 'background-image: radial-gradient(#333 20%, transparent 20%); background-size: 5px 5px;' },
-  { name: 'Gold Leaf', css: 'background: rgba(212, 175, 55, 0.4); border: 1px solid #d4af37; filter: drop-shadow(0 0 2px #d4af37);' },
-  { name: 'Dark Slate', css: 'background: #2f3640; opacity: 0.9;' },
-  { name: 'Pink Glaze', css: 'background: rgba(255, 107, 129, 0.3); border-radius: 50%; scale: 0.8;' },
-  { name: 'Cyberpunk Magenta', css: 'border: 2px solid #ff00ff; box-shadow: 0 0 8px #ff00ff;' },
-  { name: 'Minimalist Dot', css: 'background: #333; width: 6px; height: 6px; border-radius: 50%; margin: auto;' },
-  { name: 'Ocean Wave', css: 'background: linear-gradient(180deg, #48dbfb 0%, #2e86de 100%); opacity: 0.5;' },
-  { name: 'Sepia Wash', css: 'background: #704214; opacity: 0.4;' },
-  { name: 'Paper White', css: 'background: #f5f6fa; border: 1px solid #dcdde1; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);' },
-  { name: 'Vibrant Orange', css: 'background: #ff9f43; border-bottom: 3px solid #ee5253;' },
-  { name: 'Holographic', css: 'background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%); opacity: 0.6; mix-blend-mode: screen;' },
 ];
 
-const OUT_OF_BOX_STYLES: HighlightStyle[] = [
-  { name: 'Blueprint Grid', css: 'background: #0045ad; background-image: linear-gradient(rgba(255,255,255,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.2) 1px, transparent 1px); background-size: 5px 5px;' },
-  { name: 'Stitch Texture', css: 'background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.5) 2px, rgba(255,255,255,0.5) 4px); background-color: #7f8c8d; box-shadow: inset 0 0 4px #000;' },
-  { name: 'CRT Scanline', css: 'background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 2px, 3px 100%;' },
-  { name: 'Water Color', css: 'background: radial-gradient(circle at 30% 30%, rgba(52, 152, 219, 0.6), transparent), radial-gradient(circle at 70% 70%, rgba(155, 89, 182, 0.4), transparent); filter: blur(1px);' },
-  { name: 'Magnifying Glass', css: 'scale: 1.3; z-index: 10; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); border: 2px solid #fff; backdrop-filter: brightness(1.2);' },
-  { name: 'Golden Sparkle', css: 'background: #f1c40f; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); opacity: 0.8;' },
-  { name: 'Pencil Scribble', css: 'background: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'10\'><path d=\'M0 0 L10 10 M10 0 L0 10\' stroke=\'black\' stroke-width=\'0.5\' opacity=\'0.3\'/></svg>");' },
-  { name: 'Liquid Mercury', css: 'background: linear-gradient(145deg, #e6e6e6, #ffffff); box-shadow: 4px 4px 8px #d1d1d1, -4px -4px 8px #ffffff; border-radius: 50%;' },
-  { name: 'Oil Slick', css: 'background: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00); opacity: 0.5; mix-blend-mode: overlay;' },
-  { name: 'Dashed Box', css: 'border: 2px dashed #333; background: transparent; animation: dash 5s linear infinite;' },
-  { name: 'Heat Map', css: 'background: radial-gradient(rgba(255,0,0,0.8) 0%, rgba(255,255,0,0.4) 50%, transparent 100%);' },
-  { name: 'Origami Fold', css: 'background: #bdc3c7; clip-path: polygon(0 0, 100% 0, 50% 50%, 100% 100%, 0 100%); opacity: 0.7;' },
-  { name: 'Glitch RedBlue', css: 'box-shadow: 2px 0 red, -2px 0 blue; opacity: 0.6;' },
-  { name: 'Polka Dot Inverse', css: 'background-color: #333; mask: radial-gradient(circle, transparent 30%, black 35%);' },
-  { name: 'Bruised Metal', css: 'background: linear-gradient(135deg, #434343 0%, #000000 100%); border: 1px inset #555;' },
-  { name: 'Neon Frame', css: 'background: transparent; box-shadow: inset 0 0 8px #00d2ff, 0 0 8px #00d2ff; border: 1px solid #00d2ff;' },
-  { name: 'X-Ray', css: 'filter: invert(1); background: rgba(255,255,255,0.2);' },
-  { name: 'Compass Rose', css: 'background: #2c3e50; clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);' },
-  { name: 'Frosted Emerald', css: 'background: rgba(46, 204, 113, 0.3); backdrop-filter: blur(5px); border-radius: 4px;' },
-  { name: 'Comic Halftone', css: 'background-image: radial-gradient(#000 20%, transparent 20%); background-size: 3px 3px; background-position: 1px 1px; opacity: 0.4;' },
+const NINE_CLEAN_STYLES: HighlightStyle[] = [
+  { name: 'Electric Violet', css: 'background: rgba(142, 68, 173, 0.3); border: 2px solid #9b59b6; box-shadow: inset 0 0 8px rgba(155, 89, 182, 0.5);' },
+  { name: 'Alert Orange', css: 'background: rgba(230, 126, 34, 0.3); border: 2px solid #d35400; font-weight: bold;' },
+  { name: 'Cyber Teal', css: 'background: rgba(26, 188, 156, 0.25); border: 2px solid #16a085; outline: 1px solid rgba(26, 188, 156, 0.5);' },
+  { name: 'Stark White', css: 'background: rgba(255, 255, 255, 0.9); border: 2px solid #000; mix-blend-mode: overlay;' },
+  { name: 'Red Focus', css: 'background: transparent; border: 3px solid #e74c3c; box-shadow: 0 0 5px rgba(231, 76, 60, 0.5);' },
+  { name: 'Deep Navy', css: 'background: #2c3e50; border: 1px solid #bdc3c7; opacity: 0.85;' },
+  { name: 'Gold Precision', css: 'background: rgba(241, 196, 15, 0.2); border: 2px solid #f39c12; box-shadow: 0 0 4px rgba(243, 156, 18, 0.4);' },
+  { name: 'Solid Emerald', css: 'background: rgba(39, 174, 96, 0.4); border: 2px solid #27ae60;' },
+  { name: 'Industrial Slate', css: 'background: rgba(127, 140, 141, 0.3); border: 2px solid #2c3e50; border-style: double;' },
 ];
 
-const EXTRA_STYLES: HighlightStyle[] = [
-  { name: 'Blueprint', css: 'background: rgba(0, 0, 255, 0.2); background-image: radial-gradient(white 1px, transparent 0); background-size: 4px 4px;' },
-  { name: 'Hatched Right', css: 'background: repeating-linear-gradient(45deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 2px, transparent 2px, transparent 4px); border: 1px solid #000;' },
-  { name: 'Hatched Left', css: 'background: repeating-linear-gradient(-45deg, rgba(255,0,0,0.2), rgba(255,0,0,0.2) 2px, transparent 2px, transparent 4px);' },
-  { name: 'Lava Glow', css: 'background: #ff4757; box-shadow: 0 0 12px #ff4757; opacity: 0.7; border-radius: 2px;' },
-  { name: 'Inner Shadow', css: 'box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4); background: rgba(0,0,0,0.05);' },
-  { name: 'Zebra', css: 'background: linear-gradient(90deg, rgba(0,0,0,0.2) 50%, transparent 50%); background-size: 4px 100%;' },
-  { name: 'Diamond Grid', css: 'background: rgba(46, 213, 115, 0.3); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);' },
-  { name: 'Pulse Border', css: 'border: 2px solid #54a0ff; animation: pulse 1.5s infinite;' },
-  { name: 'Inverted White', css: 'background: #000; color: #fff; mix-blend-mode: color-dodge;' },
-  { name: 'Pastel Tint', css: 'background: rgba(255, 159, 243, 0.5); border-bottom: 4px solid #f368e0;' },
-  { name: 'Checkered', css: 'background-color: rgba(0,0,0,0.1); background-image: linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff), linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff); background-size: 4px 4px; background-position: 0 0, 2px 2px;' },
-  { name: 'Golden Bezel', css: 'border: 2px outset #f1c40f; background: rgba(241, 196, 15, 0.2);' },
-  { name: 'Cyber Blue', css: 'background: #00d2ff; box-shadow: 0 0 5px #00d2ff, 0 0 10px #00d2ff;' },
-  { name: 'Ghost Outline', css: 'outline: 2px dashed #7f8c8d; outline-offset: -3px;' },
-  { name: 'Carbon Fiber', css: 'background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.5), #222);' },
-  { name: 'Retro Console', css: 'background: #32ff7e; color: #000; font-weight: bold; text-shadow: 1px 1px #fff;' },
-  { name: 'Bubble', css: 'background: rgba(255,255,255,0.4); border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); scale: 0.9;' },
-  { name: 'Toxic Waste', css: 'background: #badc58; border-top: 4px solid #6ab04c;' },
-  { name: 'Midnight Fade', css: 'background: linear-gradient(to bottom right, #2c3e50, #000); opacity: 0.8;' },
-  { name: 'Sticker Peel', css: 'background: #fff; border: 1px solid #ccc; border-bottom-right-radius: 8px;' },
+const FINAL_STYLES: HighlightStyle[] = [
+  ...FAVORITE_CORE_STYLES,
+  ...NINE_CLEAN_STYLES,
+  {
+    name: 'True Color Shadow',
+    css: 'border: 2px solid #000; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.4); z-index: 5;'
+  },
 ];
 
-function mergeUniqueStyles(...groups: HighlightStyle[][]): HighlightStyle[] {
-  const seenNames = new Set<string>();
-  const merged: HighlightStyle[] = [];
-
-  for (const group of groups) {
-    for (const style of group) {
-      const normalizedName = style.name.trim().toLowerCase();
-      if (!normalizedName || seenNames.has(normalizedName)) continue;
-      seenNames.add(normalizedName);
-      merged.push(style);
-    }
-  }
-
-  return merged;
-}
-
-const ALL_HIGHLIGHT_STYLES = mergeUniqueStyles(
-  CORE_HIGHLIGHT_STYLES,
-  OUT_OF_BOX_STYLES,
-  EXTRA_STYLES,
+const DEFAULT_HIGHLIGHT_STYLE_NAME = 'True Color Shadow';
+const DEFAULT_HIGHLIGHT_STYLE_INDEX = Math.max(
+  0,
+  FINAL_STYLES.findIndex((style) => style.name === DEFAULT_HIGHLIGHT_STYLE_NAME),
 );
 
 export type StorageMode = 'cloud' | 'local';
@@ -120,10 +71,11 @@ export type PatternDashboardStats = {
 @Injectable({ providedIn: 'root' })
 export class PatternManagerService implements OnDestroy {
   private readonly repository = inject(CloudPatternRepository);
-  private inProgressKey = signal<string | null>(null);
+  private inProgressKey = signal<string | null>(localStorage.getItem('active_key'));
   private prevPct = 0;
   private cloudUnsubscribe: (() => void) | null = null;
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
+  private pathTimer: ReturnType<typeof setInterval> | null = null;
   private readonly localPrefix = 'pattern_local_';
 
   readonly activeProjectId = signal<string>('');
@@ -133,8 +85,34 @@ export class PatternManagerService implements OnDestroy {
   readonly storageMode = signal<StorageMode>('cloud');
   readonly pixelSize = signal(20);
   readonly hiddenSymbols = signal<Set<string>>(new Set());
-  readonly activeHighlightStyle = signal(0);
-  readonly highlightStyles: HighlightStyle[] = ALL_HIGHLIGHT_STYLES;
+  readonly activeHighlightStyle = signal(DEFAULT_HIGHLIGHT_STYLE_INDEX);
+  readonly showOptimalPath = signal<boolean>(
+    localStorage.getItem('show_path') === 'true'
+  );
+  readonly animationStyle = signal<PathAnimationStyle>(
+    (localStorage.getItem('anim_style') as PathAnimationStyle) || 'numbers'
+  );
+  readonly activeStepIndex = signal<number>(0);
+  readonly highlightStyles: HighlightStyle[] = FINAL_STYLES;
+  readonly optimalSequence = computed(() => {
+    if (!this.showOptimalPath()) return [] as string[];
+
+    const focusKey = this.inProgressKey();
+    if (!focusKey) return [] as string[];
+
+    const pattern = this.pattern();
+    const [row, col] = focusKey.split(',').map(Number);
+    if (!Number.isFinite(row) || !Number.isFinite(col)) return [] as string[];
+    const targetKey = pattern.g[row]?.[col];
+    if (!targetKey) return [] as string[];
+
+    const sectorCells = this.getSector(pattern.g, row, col, targetKey);
+    const progress = pattern.progress ?? {};
+    const pendingInSector = sectorCells.filter((key) => (progress[key] ?? 0) < 2);
+    if (!pendingInSector.length) return [] as string[];
+
+    return this.calculateNearestNeighborPath(pendingInSector, focusKey);
+  });
   readonly activeSymbols = computed(() => {
     const pattern = this.pattern();
     const usedKeys = new Set(pattern.g.flat());
@@ -207,6 +185,18 @@ export class PatternManagerService implements OnDestroy {
       symbols: symbolStats,
     };
   });
+  readonly currentSectorStats = computed(() => {
+    const sequence = this.optimalSequence();
+    if (sequence.length === 0) return null;
+
+    const secondsPerStitch = 5;
+    const totalSeconds = sequence.length * secondsPerStitch;
+
+    return {
+      count: sequence.length,
+      estimatedMinutes: Math.ceil(totalSeconds / 60),
+    };
+  });
   readonly remoteResource = {
     isLoading: () => this.loading(),
     reload: () => this.loadCurrentProject(),
@@ -244,10 +234,14 @@ export class PatternManagerService implements OnDestroy {
         storageMode: this.storageMode(),
         activeStyle: this.activeHighlightStyle(),
         hiddenSymbols: Array.from(this.hiddenSymbols()),
+        showOptimalPath: this.showOptimalPath(),
+        animationStyle: this.animationStyle(),
       };
 
       localStorage.setItem('bordados_settings', JSON.stringify(settings));
       localStorage.setItem('storageMode', settings.storageMode);
+      localStorage.setItem('show_path', String(settings.showOptimalPath));
+      localStorage.setItem('anim_style', settings.animationStyle);
 
       if (this.storageMode() === 'cloud') {
         void this.repository.updateUserSettings(settings).catch((error) => {
@@ -255,6 +249,15 @@ export class PatternManagerService implements OnDestroy {
         });
       }
     });
+
+    this.pathTimer = setInterval(() => {
+      const sequence = this.optimalSequence();
+      if (sequence.length > 0) {
+        this.activeStepIndex.update((value) => (value + 1) % sequence.length);
+      } else if (this.activeStepIndex() !== 0) {
+        this.activeStepIndex.set(0);
+      }
+    }, 200);
 
     void this.initialize();
   }
@@ -265,6 +268,10 @@ export class PatternManagerService implements OnDestroy {
     if (this.statusTimer) {
       clearTimeout(this.statusTimer);
       this.statusTimer = null;
+    }
+    if (this.pathTimer) {
+      clearInterval(this.pathTimer);
+      this.pathTimer = null;
     }
   }
 
@@ -314,6 +321,8 @@ export class PatternManagerService implements OnDestroy {
         storageMode?: StorageMode;
         activeStyle?: number;
         hiddenSymbols?: string[];
+        showOptimalPath?: boolean;
+        animationStyle?: PathAnimationStyle;
       };
 
       if (typeof parsed.pixelSize === 'number') {
@@ -331,6 +340,24 @@ export class PatternManagerService implements OnDestroy {
       if (Array.isArray(parsed.hiddenSymbols)) {
         this.hiddenSymbols.set(new Set(parsed.hiddenSymbols));
       }
+
+      if (typeof parsed.showOptimalPath === 'boolean') {
+        this.showOptimalPath.set(parsed.showOptimalPath);
+      }
+
+      if (parsed.animationStyle === 'ghost' || parsed.animationStyle === 'numbers') {
+        this.animationStyle.set(parsed.animationStyle);
+      }
+
+      const showPathRaw = localStorage.getItem('show_path');
+      if (showPathRaw === 'true' || showPathRaw === 'false') {
+        this.showOptimalPath.set(showPathRaw === 'true');
+      }
+
+      const savedAnimStyle = localStorage.getItem('anim_style');
+      if (savedAnimStyle === 'ghost' || savedAnimStyle === 'numbers') {
+        this.animationStyle.set(savedAnimStyle);
+      }
     } catch {
       // ignore invalid persisted settings
     }
@@ -344,6 +371,20 @@ export class PatternManagerService implements OnDestroy {
   setHighlightStyle(index: number): void {
     if (index < 0 || index >= this.highlightStyles.length) return;
     this.activeHighlightStyle.set(index);
+  }
+
+  toggleOptimalPath(): void {
+    this.showOptimalPath.update((value) => {
+      const nextValue = !value;
+      localStorage.setItem('show_path', String(nextValue));
+      return nextValue;
+    });
+  }
+
+  setAnimationStyle(style: PathAnimationStyle): void {
+    if (style !== 'ghost' && style !== 'numbers') return;
+    this.animationStyle.set(style);
+    localStorage.setItem('anim_style', style);
   }
 
   toggleHiddenSymbol(symbolKey: string): void {
@@ -717,6 +758,131 @@ export class PatternManagerService implements OnDestroy {
     return (r * 299 + g * 587 + b * 114) / 1000;
   }
 
+  private toCoord(key: string): Coord | null {
+    const [r, c] = key.split(',').map(Number);
+    if (!Number.isFinite(r) || !Number.isFinite(c)) return null;
+    return { key, r, c };
+  }
+
+  private distanceSq(a: Coord, b: Coord): number {
+    const dr = a.r - b.r;
+    const dc = a.c - b.c;
+    return dr * dr + dc * dc;
+  }
+  
+  calculateNearestNeighborPath(pendingKeys: string[], startKey: string): string[] {
+  if (!pendingKeys.length) return [];
+
+  type Node = { key: string; r: number; c: number };
+
+  const parse = (key: string): Node => {
+    const [r, c] = key.split(',').map(Number);
+    return { key, r, c };
+  };
+
+  const nodes = pendingKeys.map(parse);
+  const nodeMap = new Map<string, Node>();
+  nodes.forEach(n => nodeMap.set(n.key, n));
+
+  const keySet = new Set(pendingKeys);
+  const visited = new Set<string>();
+  const path: string[] = [];
+
+  const directions = [
+    [0, 1], [1, 0], [0, -1], [-1, 0],
+    [1, 1], [1, -1], [-1, 1], [-1, -1]
+  ];
+
+  const degree = (key: string): number => {
+    const { r, c } = nodeMap.get(key)!;
+    let count = 0;
+    for (const [dr, dc] of directions) {
+      if (keySet.has(`${r + dr},${c + dc}`)) count++;
+    }
+    return count;
+  };
+
+  const distSq = (a: Node, b: Node) => {
+    const dr = a.r - b.r;
+    const dc = a.c - b.c;
+    return dr * dr + dc * dc;
+  };
+
+  let current = nodeMap.get(startKey) ?? nodes[0];
+  let prevDir: [number, number] | null = null;
+
+  while (visited.size < keySet.size) {
+    visited.add(current.key);
+    path.push(current.key);
+
+    const candidates: {
+      node: Node;
+      dir: [number, number];
+      score: number;
+    }[] = [];
+
+    for (const [dr, dc] of directions) {
+      const neighborKey = `${current.r + dr},${current.c + dc}`;
+      if (!keySet.has(neighborKey) || visited.has(neighborKey)) continue;
+
+      const neighbor = nodeMap.get(neighborKey)!;
+
+      let score = 0;
+
+      // Prefer continuing direction
+      if (prevDir && prevDir[0] === dr && prevDir[1] === dc) {
+        score += 5;
+      }
+
+      // Prefer high-degree (dense interior) nodes
+      score += degree(neighborKey) * 3;
+
+      // Slight preference for closer nodes (usually equal here)
+      score -= distSq(current, neighbor) * 0.01;
+
+      candidates.push({ node: neighbor, dir: [dr, dc], score });
+    }
+
+    if (candidates.length > 0) {
+      candidates.sort((a, b) => b.score - a.score);
+      const chosen = candidates[0];
+      prevDir = chosen.dir;
+      current = chosen.node;
+      continue;
+    }
+
+    // No adjacent unvisited → jump to best remaining node
+    let best: Node | null = null;
+    let bestScore = -Infinity;
+
+    for (const key of keySet) {
+      if (visited.has(key)) continue;
+
+      const candidate = nodeMap.get(key)!;
+
+      let score = 0;
+
+      // Prefer high-degree nodes first (postpone isolated like "4")
+      score += degree(key) * 4;
+
+      // Prefer closer jumps
+      score -= distSq(current, candidate) * 0.001;
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = candidate;
+      }
+    }
+
+    if (!best) break;
+
+    prevDir = null;
+    current = best;
+  }
+
+  return path;
+}
+
   /**
    * Sector = the clicked cell + its immediate same-color neighbors (8-directional, 1 step only).
    * 
@@ -736,28 +902,23 @@ export class PatternManagerService implements OnDestroy {
       const sector = this.getSector(current.g, row, col, targetKey);
 
       if (currentStep === 1) {
-        // Already in-progress → mark whole sector as done
         sector.forEach(k => { progress[k] = 2; });
         this.inProgressKey.set(null);
+        localStorage.removeItem('active_key');
       } else if (currentStep === 2) {
-        // Done → reset sector to pending
         sector.forEach(k => { progress[k] = 0; });
         this.inProgressKey.set(null);
+        localStorage.removeItem('active_key');
       } else {
-        // Pending → clear any existing in-progress sector first
-        const prevKey = this.inProgressKey();
-        if (prevKey) {
-          const [pr, pc] = prevKey.split(',').map(Number);
-          if (current.g[pr]?.[pc]) {
-            const prevSector = this.getSector(current.g, pr, pc, current.g[pr][pc]);
-            prevSector.forEach(k => {
-              if ((progress[k] ?? 0) === 1) progress[k] = 0;
-            });
+        Object.keys(progress).forEach((key) => {
+          if (progress[key] === 1) {
+            progress[key] = 0;
           }
-        }
-        // Mark new sector as in-progress
+        });
+
         sector.forEach(k => { progress[k] = 1; });
         this.inProgressKey.set(coordKey);
+        localStorage.setItem('active_key', coordKey);
       }
 
       return { ...current, progress };

@@ -23,6 +23,22 @@ export class MatrixGridComponent {
   protected readonly midRow = computed(() => Math.floor((this.matrix().m.r ?? 0) / 2));
   protected readonly midCol = computed(() => Math.floor((this.matrix().m.c ?? 0) / 2));
   protected readonly pixelSize = this.patternService.pixelSize;
+  protected readonly highlightStyles = this.patternService.highlightStyles;
+  protected readonly activeHighlightStyle = this.patternService.activeHighlightStyle;
+  protected readonly showOptimalPath = this.patternService.showOptimalPath;
+  protected readonly animationStyle = this.patternService.animationStyle;
+  protected readonly activeStepIndex = this.patternService.activeStepIndex;
+  protected readonly optimalSequence = this.patternService.optimalSequence;
+  protected readonly pathStepMap = computed(() => {
+    const map = new Map<string, number>();
+    const sequence = this.optimalSequence();
+
+    sequence.forEach((key, index) => {
+      map.set(key, index);
+    });
+
+    return map;
+  });
 
   protected onCellClick(row: number, col: number): void {
     const def = this.matrix().l[this.matrix().g[row][col]] as any;
@@ -61,13 +77,10 @@ export class MatrixGridComponent {
     };
 
     if (step === 1) {
-      const style = this.patternService.highlightStyles[this.patternService.activeHighlightStyle()]?.css ?? '';
-      const parsed = this.cssTextToObject(style);
       return {
         'background-color': def.b,
         'color': def.c,
         'opacity': '0.85',
-        ...parsed,
       };
     }
 
@@ -75,8 +88,13 @@ export class MatrixGridComponent {
       'background-color': def.b,
       'color': def.c,
       'opacity': '1',
-      'box-shadow': 'inset 0 0 0 2px rgba(0,0,0,0.4)',
+      'filter': 'none',
+      'background-image': 'none',
     };
+  }
+
+  protected getStep(row: number, col: number): number {
+    return this.matrix().progress?.[`${row},${col}`] ?? 0;
   }
 
   protected getSymbol(cell: string, row: number, col: number): string {
@@ -89,20 +107,8 @@ export class MatrixGridComponent {
     return def.s ?? '';
   }
 
-  private cssTextToObject(cssText: string): Record<string, string> {
-    return cssText
-      .split(';')
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .reduce<Record<string, string>>((accumulator, declaration) => {
-        const separatorIndex = declaration.indexOf(':');
-        if (separatorIndex === -1) return accumulator;
-        const property = declaration.slice(0, separatorIndex).trim();
-        const value = declaration.slice(separatorIndex + 1).trim();
-        if (property && value) {
-          accumulator[property] = value;
-        }
-        return accumulator;
-      }, {});
+  protected getPathStepIndex(row: number, col: number): number {
+    const key = `${row},${col}`;
+    return this.pathStepMap().get(key) ?? -1;
   }
 }

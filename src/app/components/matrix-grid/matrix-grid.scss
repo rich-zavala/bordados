@@ -10,6 +10,8 @@
 .stitch-square {
   width: var(--pixel-size, 18px);
   height: var(--pixel-size, 18px);
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,6 +49,118 @@
     border-top: 2px solid rgba(220, 50, 50, 0.7) !important;
     border-left: 2px solid rgba(220, 50, 50, 0.7) !important;
   }
+}
+
+.stitch-square[data-step='0'] {
+  opacity: 0.8;
+}
+
+.stitch-square[data-step='1'] {
+  opacity: 1;
+}
+
+.stitch-square[data-step='2'] {
+  opacity: 1 !important;
+  filter: none !important;
+  background-image: none !important;
+}
+
+.stitch-square.is-done {
+  opacity: 1 !important;
+  filter: none !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.highlight-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.path-overlay-container {
+  position: absolute;
+  inset: 0;
+  display: block !important;
+  z-index: 999 !important;
+  pointer-events: none;
+}
+
+.path-tracker,
+.rastro-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: none;
+  transition: opacity 0.15s linear;
+}
+
+.sun-particle {
+  font-size: 16px;
+  filter: drop-shadow(0 0 5px #f1c40f);
+  z-index: 1001;
+}
+
+.trail-ghost,
+.trail-layer {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  border-radius: 2px;
+  transition: opacity 0.3s ease;
+}
+
+.path-step-number {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white !important;
+  font-size: 10px;
+  font-weight: 900;
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
+  text-shadow: 1px 1px 1px #000;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+[data-tail='0'] .trail-ghost { opacity: 0.8; }
+[data-tail='1'] .trail-ghost { opacity: 0.6; }
+[data-tail='2'] .trail-ghost { opacity: 0.4; }
+[data-tail='3'] .trail-ghost { opacity: 0.2; }
+[data-tail='4'] .trail-ghost { opacity: 0.1; }
+[data-ghost-level='0'] .sun-particle {
+  animation: leadSunPulse 0.2s infinite alternate;
+  filter: drop-shadow(0 0 8px #f1c40f);
+  z-index: 1005;
+}
+
+[data-ghost-level='0'] { opacity: 1; }
+[data-ghost-level='1'] { opacity: 0.9; }
+[data-ghost-level='2'] { opacity: 0.8; }
+[data-ghost-level='3'] { opacity: 0.7; }
+[data-ghost-level='4'] { opacity: 0.5; }
+
+@keyframes leadSunPulse {
+  from { transform: scale(1.1); }
+  to { transform: scale(1.4); }
+}
+
+.true-color-overlay {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid rgba(0, 0, 0, 0.8);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 10;
 }
 
 @keyframes dash {

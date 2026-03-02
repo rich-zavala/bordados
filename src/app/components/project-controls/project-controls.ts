@@ -5,7 +5,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { PatternManagerService } from '../../services/pattern-manager';
+import { PathAnimationStyle, PatternManagerService } from '../../services/pattern-manager';
 import { ProjectIngestorService } from '../../services/project-ingestor.service';
 
 type Tab = 'project' | 'statistics' | 'config' | 'aime';
@@ -34,6 +34,9 @@ export class ProjectControlsComponent implements OnDestroy {
   storageMode = this.manager.storageMode;
   activeSymbols = this.manager.activeSymbols;
   stats = this.manager.stats;
+  showOptimalPath = this.manager.showOptimalPath;
+  animationStyle = this.manager.animationStyle;
+  currentSectorStats = this.manager.currentSectorStats;
 
   isOpen = signal<boolean>(false);
   activeTab = signal<Tab>('project');
@@ -120,6 +123,12 @@ export class ProjectControlsComponent implements OnDestroy {
   }
   toggleSymbol(symbolKey: string) {
     this.manager.toggleHiddenSymbol(symbolKey);
+  }
+  toggleOptimalPath() {
+    this.manager.toggleOptimalPath();
+  }
+  setPathAnimationStyle(value: string) {
+    this.manager.setAnimationStyle(value as PathAnimationStyle);
   }
   startRename() { this.renameValue = this.activeId(); this.isRenaming = true; }
   confirmRename() {

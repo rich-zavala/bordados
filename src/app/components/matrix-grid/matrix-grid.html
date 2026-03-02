@@ -2,11 +2,48 @@
   <ng-container *ngFor="let row of matrix().g; let rowIndex = index">
     <div *ngFor="let cell of row; let colIndex = index"
          class="stitch-square"
+         [class.is-done]="getStep(rowIndex, colIndex) === 2"
+         [attr.data-step]="getStep(rowIndex, colIndex)"
          [class.mid-row]="rowIndex === midRow()"
          [class.mid-col]="colIndex === midCol()"
          [ngStyle]="getTileStyle(cell, rowIndex, colIndex)"
          (click)="onCellClick(rowIndex, colIndex)">
       {{ getSymbol(cell, rowIndex, colIndex) }}
+
+      @let currentStep = getStep(rowIndex, colIndex);
+      @if (currentStep === 1) {
+        <div
+          class="highlight-layer"
+          [style]="highlightStyles[activeHighlightStyle()]?.css ?? ''">
+        </div>
+      }
+
+      @if (showOptimalPath()) {
+        @let sequence = optimalSequence();
+        @let stepIdx = sequence.indexOf(rowIndex + ',' + colIndex);
+        @if (stepIdx !== -1) {
+          <div class="path-overlay-container">
+            @if (animationStyle() === 'numbers') {
+              <div class="path-step-number">{{ stepIdx + 1 }}</div>
+            }
+
+            @if (animationStyle() === 'ghost') {
+              @let activeIdx = activeStepIndex();
+              @let dist = activeIdx - stepIdx;
+              @if (dist >= 0 && dist <= 4) {
+                <div class="rastro-wrapper" [attr.data-ghost-level]="dist">
+                  <span class="sun-particle">🔅</span>
+                  <div class="trail-layer"></div>
+                </div>
+              }
+            }
+          </div>
+        }
+      }
+
+      @if (currentStep === 2) {
+        <div class="true-color-overlay"></div>
+      }
     </div>
   </ng-container>
 </div>

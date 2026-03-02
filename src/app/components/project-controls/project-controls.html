@@ -129,6 +129,36 @@
                   </button>
                 }
               </div>
+
+              <div class="pro-tools-panel">
+                <div class="pro-header">
+                  <span>SISTEMA DE GUÍA PRO</span>
+                </div>
+
+                <div class="pro-body">
+                  <div class="control-row">
+                    <div class="control-info">
+                      <label>Ruta Óptima 🔅</label>
+                      <small>Secuenciador activo</small>
+                    </div>
+                    <label class="pro-switch">
+                      <input type="checkbox" [checked]="showOptimalPath()" (change)="toggleOptimalPath()">
+                      <span class="pro-slider"></span>
+                    </label>
+                  </div>
+
+                  @if (showOptimalPath()) {
+                    <div class="pro-details-card">
+                      <div class="select-wrapper">
+                        <select [ngModel]="animationStyle()" (ngModelChange)="animationStyle.set($event)">
+                          <option value="ghost">Rastro 🔅</option>
+                          <option value="numbers">Números (Integrados)</option>
+                        </select>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
             </section>
           }
 
