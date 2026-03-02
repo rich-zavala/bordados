@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, computed, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { PatternManagerService } from '../../services/pattern-manager';
 import { CommonModule } from '@angular/common';
 
@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
 })
 export class MatrixGridComponent {
   private readonly patternService = inject(PatternManagerService);
+  @ViewChild('canvasViewport') private canvasViewport?: ElementRef<HTMLElement>;
 
   protected readonly matrix = this.patternService.pattern;
   protected readonly cols = computed(() => this.matrix().m.c || 1);
@@ -110,5 +111,71 @@ export class MatrixGridComponent {
   protected getPathStepIndex(row: number, col: number): number {
     const key = `${row},${col}`;
     return this.pathStepMap().get(key) ?? -1;
+  }
+
+  @HostListener('document:keydown.space', ['$event'])
+  protected handleSpaceBar(event: Event): void {
+    const keyboardEvent = event as KeyboardEvent;
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+    keyboardEvent.preventDefault();
+    console.log('Space pressed: Centering sector...');
+    this.centerActiveSector();
+  }
+
+  private centerActiveSector(): void {
+    const viewport =
+      this.canvasViewport?.nativeElement ??
+      (document.querySelector('.canvas-viewport') as HTMLElement | null);
+    if (!viewport) return;
+
+    const sequence = this.optimalSequence();
+    if (!sequence || sequence.length === 0) {
+      const grid = document.querySelector('.matrix-container') as HTMLElement | null;
+      if (!grid) {
+        console.warn('No active sector to center.');
+        return;
+      }
+
+      console.log('No sector active, centering whole grid.');
+      viewport.scrollTo({
+        left: Math.max(0, grid.scrollWidth / 2 - viewport.clientWidth / 2),
+        top: Math.max(0, grid.scrollHeight / 2 - viewport.clientHeight / 2),
+        behavior: 'smooth',
+      });
+      return;
+    }
+
+    let minTop = Number.POSITIVE_INFINITY;
+    let maxBottom = Number.NEGATIVE_INFINITY;
+    let minLeft = Number.POSITIVE_INFINITY;
+    let maxRight = Number.NEGATIVE_INFINITY;
+
+    for (const key of sequence) {
+      const cell = document.querySelector(`[data-coord="${key}"]`) as HTMLElement | null;
+      if (!cell) continue;
+
+      const top = cell.offsetTop;
+      const left = cell.offsetLeft;
+      const bottom = top + cell.offsetHeight;
+      const right = left + cell.offsetWidth;
+
+      if (top < minTop) minTop = top;
+      if (bottom > maxBottom) maxBottom = bottom;
+      if (left < minLeft) minLeft = left;
+      if (right > maxRight) maxRight = right;
+    }
+
+    if (!Number.isFinite(minTop) || !Number.isFinite(minLeft)) return;
+
+    const centerX = (minLeft + maxRight) / 2;
+    const centerY = (minTop + maxBottom) / 2;
+
+    viewport.scrollTo({
+      left: Math.max(0, centerX - viewport.clientWidth / 2),
+      top: Math.max(0, centerY - viewport.clientHeight / 2),
+      behavior: 'smooth',
+    });
   }
 }

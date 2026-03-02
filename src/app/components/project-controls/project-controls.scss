@@ -593,6 +593,15 @@ hr {
   background: #252535;
 }
 
+.config-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.config-sidebar::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
 .stats-row {
   height: 60px;
   display: flex;

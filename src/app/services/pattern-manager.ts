@@ -15,6 +15,9 @@ interface Coord {
   c: number;
 }
 
+const ACTIVE_SECTOR_KEY = 'active_sector_key';
+const LEGACY_ACTIVE_SECTOR_KEY = 'active_key';
+
 const FAVORITE_CORE_STYLES: HighlightStyle[] = [
   { name: 'Classic Blue', css: 'background: rgba(52, 152, 219, 0.4); border: 2px solid #2980b9;' },
   { name: 'Neon Lime', css: 'background: rgba(57, 255, 20, 0.2); box-shadow: inset 0 0 10px #39ff14; border: 1px solid #39ff14;' },
@@ -71,7 +74,9 @@ export type PatternDashboardStats = {
 @Injectable({ providedIn: 'root' })
 export class PatternManagerService implements OnDestroy {
   private readonly repository = inject(CloudPatternRepository);
-  private inProgressKey = signal<string | null>(localStorage.getItem('active_key'));
+  private inProgressKey = signal<string | null>(
+    localStorage.getItem(ACTIVE_SECTOR_KEY) ?? localStorage.getItem(LEGACY_ACTIVE_SECTOR_KEY)
+  );
   private prevPct = 0;
   private cloudUnsubscribe: (() => void) | null = null;
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
@@ -208,6 +213,8 @@ export class PatternManagerService implements OnDestroy {
   });
 
   constructor() {
+    this.migrateActiveSectorStorageKey();
+
     const lastId = localStorage.getItem('activeProjectId');
     if (lastId) {
       this.activeProjectId.set(lastId);
@@ -758,6 +765,32 @@ export class PatternManagerService implements OnDestroy {
     return (r * 299 + g * 587 + b * 114) / 1000;
   }
 
+  private migrateActiveSectorStorageKey(): void {
+    const activeSector = localStorage.getItem(ACTIVE_SECTOR_KEY);
+    if (activeSector) {
+      this.inProgressKey.set(activeSector);
+      return;
+    }
+
+    const legacySector = localStorage.getItem(LEGACY_ACTIVE_SECTOR_KEY);
+    if (!legacySector) return;
+
+    localStorage.setItem(ACTIVE_SECTOR_KEY, legacySector);
+    this.inProgressKey.set(legacySector);
+  }
+
+  private setActiveSectorKey(coordKey: string | null): void {
+    this.inProgressKey.set(coordKey);
+    if (coordKey) {
+      localStorage.setItem(ACTIVE_SECTOR_KEY, coordKey);
+      localStorage.setItem(LEGACY_ACTIVE_SECTOR_KEY, coordKey);
+      return;
+    }
+
+    localStorage.removeItem(ACTIVE_SECTOR_KEY);
+    localStorage.removeItem(LEGACY_ACTIVE_SECTOR_KEY);
+  }
+
   private toCoord(key: string): Coord | null {
     const [r, c] = key.split(',').map(Number);
     if (!Number.isFinite(r) || !Number.isFinite(c)) return null;
@@ -903,12 +936,10 @@ export class PatternManagerService implements OnDestroy {
 
       if (currentStep === 1) {
         sector.forEach(k => { progress[k] = 2; });
-        this.inProgressKey.set(null);
-        localStorage.removeItem('active_key');
+        this.setActiveSectorKey(null);
       } else if (currentStep === 2) {
         sector.forEach(k => { progress[k] = 0; });
-        this.inProgressKey.set(null);
-        localStorage.removeItem('active_key');
+        this.setActiveSectorKey(null);
       } else {
         Object.keys(progress).forEach((key) => {
           if (progress[key] === 1) {
@@ -917,8 +948,7 @@ export class PatternManagerService implements OnDestroy {
         });
 
         sector.forEach(k => { progress[k] = 1; });
-        this.inProgressKey.set(coordKey);
-        localStorage.setItem('active_key', coordKey);
+        this.setActiveSectorKey(coordKey);
       }
 
       return { ...current, progress };

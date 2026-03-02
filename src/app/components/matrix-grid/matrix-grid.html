@@ -1,8 +1,11 @@
-<div class="grid-container" [style.grid-template-columns]="'repeat(' + matrix().m.c + ', 1fr)'">
+<div class="canvas-viewport" #canvasViewport>
+  <div class="matrix-container">
+    <div class="grid-container" [style.grid-template-columns]="'repeat(' + matrix().m.c + ', 1fr)'">
   <ng-container *ngFor="let row of matrix().g; let rowIndex = index">
     <div *ngFor="let cell of row; let colIndex = index"
          class="stitch-square"
          [class.is-done]="getStep(rowIndex, colIndex) === 2"
+         [attr.data-coord]="rowIndex + ',' + colIndex"
          [attr.data-step]="getStep(rowIndex, colIndex)"
          [class.mid-row]="rowIndex === midRow()"
          [class.mid-col]="colIndex === midCol()"
@@ -45,5 +48,7 @@
         <div class="true-color-overlay"></div>
       }
     </div>
-  </ng-container>
+      </ng-container>
+    </div>
+  </div>
 </div>
