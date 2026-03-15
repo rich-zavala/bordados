@@ -20,15 +20,10 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
   private readonly patternService = inject(PatternManagerService);
   @ViewChild('canvasViewport') private canvasViewport?: ElementRef<HTMLElement>;
   @ViewChild('gridContainer') gridContainer!: ElementRef<HTMLElement>;
-  private readonly visibilityHandler = () => {
-    if (document.visibilityState === 'hidden') {
-      this.saveViewport();
-    } else if (document.visibilityState === 'visible') {
-      setTimeout(() => this.restoreViewport(), 80);
-    }
-  };
-  private readonly unloadHandler = () => {
-    this.saveViewport();
+  private isRestoring = true;
+  private viewportSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly scrollHandler = () => {
+    this.saveViewportDebounced();
   };
 
   protected readonly matrix = this.patternService.pattern;
@@ -57,73 +52,153 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
   });
 
   constructor() {
-    document.addEventListener('visibilitychange', this.visibilityHandler);
-    window.addEventListener('beforeunload', this.unloadHandler);
-
     effect(() => {
       const id = this.patternService.activeProjectId();
       if (!id) return;
 
-      const raw = localStorage.getItem(VIEWPORT_KEY);
-      if (!raw) return;
-
-      try {
-        const stored = JSON.parse(raw) as { projectId?: string };
-        if (stored.projectId && stored.projectId !== id) {
-          localStorage.removeItem(VIEWPORT_KEY);
-        }
-      } catch {
-        localStorage.removeItem(VIEWPORT_KEY);
-      }
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith(VIEWPORT_KEY + '_') && key !== `${VIEWPORT_KEY}_${id}`)
+        .forEach((key) => localStorage.removeItem(key));
     });
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.restoreViewport(), 80);
+    const container = this.gridContainer?.nativeElement;
+    if (container) {
+      container.addEventListener('scroll', this.scrollHandler, { passive: true });
+    }
+
+    window.addEventListener('scroll', this.scrollHandler, { passive: true });
+
+    this.waitAndRestore(0);
   }
 
   ngOnDestroy(): void {
-    document.removeEventListener('visibilitychange', this.visibilityHandler);
-    window.removeEventListener('beforeunload', this.unloadHandler);
+    if (this.viewportSaveTimer) clearTimeout(this.viewportSaveTimer);
+    const container = this.gridContainer?.nativeElement;
+    if (container) {
+      container.removeEventListener('scroll', this.scrollHandler);
+    }
+    window.removeEventListener('scroll', this.scrollHandler);
+  }
+
+  private saveViewportDebounced(): void {
+    if (this.viewportSaveTimer) clearTimeout(this.viewportSaveTimer);
+    this.viewportSaveTimer = setTimeout(() => {
+      this.saveViewport();
+    }, 350);
   }
 
   private saveViewport(): void {
+    if (this.isRestoring) {
+      return;
+    }
+
+    const projectId = this.patternService.activeProjectId();
+    if (!projectId) return;
     const container = this.gridContainer?.nativeElement;
     if (!container) return;
 
     const state = {
       scrollLeft: container.scrollLeft,
       scrollTop: container.scrollTop,
+      windowScrollX: window.scrollX,
+      windowScrollY: window.scrollY,
       pixelSize: this.patternService.pixelSize(),
-      projectId: this.patternService.activeProjectId(),
+      projectId,
     };
 
-    localStorage.setItem(VIEWPORT_KEY, JSON.stringify(state));
+    localStorage.setItem(`${VIEWPORT_KEY}_${projectId}`, JSON.stringify(state));
   }
 
   private restoreViewport(): void {
-    const raw = localStorage.getItem(VIEWPORT_KEY);
+    const projectId = this.patternService.activeProjectId();
+    if (!projectId) return;
+
+    const raw = localStorage.getItem(`${VIEWPORT_KEY}_${projectId}`);
     if (!raw) return;
 
     try {
       const state = JSON.parse(raw) as {
         scrollLeft: number;
         scrollTop: number;
+        windowScrollX?: number;
+        windowScrollY?: number;
         pixelSize: number;
-        projectId?: string;
       };
-
-      if (state.projectId && state.projectId !== this.patternService.activeProjectId()) {
-        return;
-      }
 
       const container = this.gridContainer?.nativeElement;
       if (!container) return;
-      container.scrollLeft = state.scrollLeft;
-      container.scrollTop = state.scrollTop;
+
+      const savedPixelSize = state.pixelSize ?? this.patternService.pixelSize();
+      const currentPixelSize = this.patternService.pixelSize();
+      const ratio = currentPixelSize / savedPixelSize;
+
+      const targetLeft = Math.round(state.scrollLeft * ratio);
+      const targetTop = Math.round(state.scrollTop * ratio);
+
+      container.scrollLeft = targetLeft;
+      container.scrollTop = targetTop;
+
+      if (state.windowScrollY || state.windowScrollX) {
+        window.scrollTo({
+          left: state.windowScrollX ?? 0,
+          top: state.windowScrollY ?? 0,
+          behavior: 'auto',
+        });
+      }
     } catch {
       // ignore corrupt state
     }
+  }
+
+  private waitAndRestore(attempts: number): void {
+    if (attempts > 60) {
+      this.isRestoring = false;
+      return;
+    }
+
+    const projectId = this.patternService.activeProjectId();
+    if (!projectId) {
+      setTimeout(() => this.waitAndRestore(attempts + 1), 50);
+      return;
+    }
+
+    if (this.patternService.loading()) {
+      setTimeout(() => this.waitAndRestore(attempts + 1), 50);
+      return;
+    }
+
+    const pattern = this.patternService.pattern();
+    if (!pattern.g.length || pattern.m.r === 0 || pattern.m.c === 0) {
+      setTimeout(() => this.waitAndRestore(attempts + 1), 50);
+      return;
+    }
+
+    const pixelSize = this.patternService.pixelSize();
+    const expectedWidth = pattern.m.c * pixelSize;
+    const expectedHeight = pattern.m.r * pixelSize;
+
+    const container = this.gridContainer?.nativeElement;
+    if (!container) {
+      setTimeout(() => this.waitAndRestore(attempts + 1), 50);
+      return;
+    }
+
+    if (
+      container.scrollWidth < expectedWidth ||
+      container.scrollHeight < expectedHeight
+    ) {
+      setTimeout(() => this.waitAndRestore(attempts + 1), 50);
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.restoreViewport();
+        this.isRestoring = false;
+      });
+    });
   }
 
   protected onCellClick(row: number, col: number): void {
@@ -209,7 +284,6 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
     if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
 
     keyboardEvent.preventDefault();
-    console.log('Space pressed: Centering sector...');
     this.centerActiveSector();
   }
 
@@ -222,12 +296,7 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
     const sequence = this.optimalSequence();
     if (!sequence || sequence.length === 0) {
       const grid = document.querySelector('.matrix-container') as HTMLElement | null;
-      if (!grid) {
-        console.warn('No active sector to center.');
-        return;
-      }
-
-      console.log('No sector active, centering whole grid.');
+      if (!grid) return;
       viewport.scrollTo({
         left: Math.max(0, grid.scrollWidth / 2 - viewport.clientWidth / 2),
         top: Math.max(0, grid.scrollHeight / 2 - viewport.clientHeight / 2),
