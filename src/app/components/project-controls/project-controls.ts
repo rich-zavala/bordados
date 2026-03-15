@@ -32,10 +32,12 @@ export class ProjectControlsComponent implements OnDestroy {
   highlightStyles = this.manager.highlightStyles;
   storageMode = this.manager.storageMode;
   activeSymbols = this.manager.activeSymbols;
+  overallProgress = this.manager.overallProgress;
   stats = this.manager.stats;
   showOptimalPath = this.manager.showOptimalPath;
   animationStyle = this.manager.animationStyle;
   currentSectorStats = this.manager.currentSectorStats;
+  readonly circumference = 2 * Math.PI * 26;
 
   isOpen = signal<boolean>(false);
   activeTab = signal<Tab>('project');
@@ -55,6 +57,10 @@ export class ProjectControlsComponent implements OnDestroy {
   constructor() {
     document.addEventListener('keydown', this.keyHandler);
     window.addEventListener('pattern-complete', this.completeHandler);
+  }
+
+  getOffset(percent: number): number {
+    return this.circumference * (1 - percent / 100);
   }
 
   ngOnDestroy() {

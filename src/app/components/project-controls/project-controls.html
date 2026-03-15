@@ -1,9 +1,45 @@
 <canvas #confettiCanvas class="confetti-canvas"></canvas>
 
 <div class="floating-container">
-  <button class="fab" (click)="isOpen.set(!isOpen())" [class.is-open]="isOpen()">
-    <span class="fab-icon">{{ isOpen() ? '✕' : '🧵' }}</span>
-  </button>
+  <div class="fab-wrapper">
+
+    <div class="fab-tooltip">
+      @if (overallProgress(); as data) {
+        {{ data.done }} de {{ data.total }} puntadas · {{ data.overallPercent }}%
+      } @else {
+        Sin proyecto cargado
+      }
+    </div>
+
+    <button class="fab" (click)="isOpen.set(!isOpen())" [class.is-open]="isOpen()">
+      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="26"
+          fill="none"
+          stroke="rgba(255,255,255,0.2)"
+          stroke-width="4"/>
+        @if (overallProgress(); as data) {
+          <circle cx="32" cy="32" r="26"
+            fill="none"
+            stroke="white"
+            stroke-width="4"
+            stroke-linecap="round"
+            [attr.stroke-dasharray]="circumference"
+            [attr.stroke-dashoffset]="getOffset(data.overallPercent)"
+            transform="rotate(-90 32 32)"
+            style="transition: stroke-dashoffset 0.5s cubic-bezier(.4,0,.2,1);"/>
+        }
+      </svg>
+
+      @if (overallProgress(); as data) {
+        <span class="fab-percent">
+          {{ isOpen() ? '✕' : data.overallPercent + '%' }}
+        </span>
+      } @else {
+        <span class="fab-empty">{{ isOpen() ? '✕' : '–' }}</span>
+      }
+    </button>
+
+  </div>
 
   <div class="panel" *ngIf="isOpen()">
     <div class="tabs">

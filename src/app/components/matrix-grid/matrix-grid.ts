@@ -19,6 +19,7 @@ export class MatrixGridComponent {
   @ViewChild('canvasViewport') private canvasViewport?: ElementRef<HTMLElement>;
 
   protected readonly matrix = this.patternService.pattern;
+  protected readonly progress = this.patternService.progress;
   protected readonly cols = computed(() => this.matrix().m.c || 1);
   protected readonly isLoading = computed(() => this.patternService.remoteResource.isLoading());
   protected readonly midRow = computed(() => Math.floor((this.matrix().m.r ?? 0) / 2));
@@ -69,7 +70,7 @@ export class MatrixGridComponent {
       };
     }
 
-    const step = p.progress?.[`${row},${col}`] ?? 0;
+    const step = this.progress()[`${row},${col}`] ?? 0;
 
     if (step === 0) return {
       'background-color': def.b,
@@ -95,7 +96,7 @@ export class MatrixGridComponent {
   }
 
   protected getStep(row: number, col: number): number {
-    return this.matrix().progress?.[`${row},${col}`] ?? 0;
+    return this.progress()[`${row},${col}`] ?? 0;
   }
 
   protected getSymbol(cell: string, row: number, col: number): string {
@@ -103,7 +104,7 @@ export class MatrixGridComponent {
     const def = p.l[cell] as any;
     if (!def || def.isBackground) return '';
     if (this.patternService.hiddenSymbols().has(cell)) return '';
-    const step = p.progress?.[`${row},${col}`] ?? 0;
+    const step = this.progress()[`${row},${col}`] ?? 0;
     if (step === 1) return '';
     return def.s ?? '';
   }

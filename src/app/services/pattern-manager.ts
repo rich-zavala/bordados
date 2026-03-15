@@ -81,6 +81,10 @@ export class PatternManagerService implements OnDestroy {
   private cloudUnsubscribe: (() => void) | null = null;
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
   private pathTimer: ReturnType<typeof setInterval> | null = null;
+  private saveTimer: ReturnType<typeof setTimeout> | null = null;
+  private settingsTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly _totalStitches = signal(0);
+  private readonly _doneStitches = signal(0);
   private readonly localPrefix = 'pattern_local_';
 
   readonly activeProjectId = signal<string>('');
@@ -98,6 +102,7 @@ export class PatternManagerService implements OnDestroy {
     (localStorage.getItem('anim_style') as PathAnimationStyle) || 'numbers'
   );
   readonly activeStepIndex = signal<number>(0);
+  readonly progress = signal<Record<string, number>>({});
   readonly highlightStyles: HighlightStyle[] = FINAL_STYLES;
   readonly optimalSequence = computed(() => {
     if (!this.showOptimalPath()) return [] as string[];
@@ -112,7 +117,7 @@ export class PatternManagerService implements OnDestroy {
     if (!targetKey) return [] as string[];
 
     const sectorCells = this.getSector(pattern.g, row, col, targetKey);
-    const progress = pattern.progress ?? {};
+    const progress = this.progress();
     const pendingInSector = sectorCells.filter((key) => (progress[key] ?? 0) < 2);
     if (!pendingInSector.length) return [] as string[];
 
@@ -132,16 +137,28 @@ export class PatternManagerService implements OnDestroy {
       }))
       .sort((a, b) => b.brightness - a.brightness);
   });
+  readonly overallProgress = computed(() => {
+    const total = this._totalStitches();
+    const done = this._doneStitches();
+    if (total === 0) return null;
+
+    return {
+      total,
+      done,
+      remaining: total - done,
+      overallPercent: Math.round((done / total) * 100),
+    };
+  });
   readonly stats = computed<PatternDashboardStats | null>(() => {
+    const overall = this.overallProgress();
+    if (!overall) return null;
+
     const pattern = this.pattern();
     if (!pattern?.g?.length) return null;
 
-    const progress = pattern.progress ?? {};
+    const progress = this.progress();
     const symbols = this.activeSymbols();
     if (!symbols.length) return null;
-
-    let totalCells = 0;
-    let completedCells = 0;
 
     const statsByKey: Record<string, SymbolProgressStat> = symbols.reduce((accumulator, symbol) => {
       accumulator[symbol.key] = {
@@ -161,12 +178,10 @@ export class PatternManagerService implements OnDestroy {
         const bucket = statsByKey[symbolKey];
         if (!bucket) continue;
 
-        totalCells++;
         bucket.total++;
 
         const step = progress[`${row},${col}`] ?? 0;
         if (step === 2) {
-          completedCells++;
           bucket.done++;
         }
       }
@@ -180,13 +195,13 @@ export class PatternManagerService implements OnDestroy {
       }))
       .sort((a, b) => b.percent - a.percent || b.done - a.done || a.char.localeCompare(b.char));
 
-    if (!symbolStats.length || totalCells === 0) return null;
+    if (!symbolStats.length) return null;
 
     return {
-      overallPercent: Math.round((completedCells / totalCells) * 100),
-      total: totalCells,
-      done: completedCells,
-      remaining: totalCells - completedCells,
+      overallPercent: overall.overallPercent,
+      total: overall.total,
+      done: overall.done,
+      remaining: overall.remaining,
       symbols: symbolStats,
     };
   });
@@ -251,13 +266,20 @@ export class PatternManagerService implements OnDestroy {
       localStorage.setItem('anim_style', settings.animationStyle);
 
       if (this.storageMode() === 'cloud') {
-        void this.repository.updateUserSettings(settings).catch((error) => {
-          console.error('Settings sync failed:', error);
-        });
+        if (this.settingsTimer) clearTimeout(this.settingsTimer);
+        this.settingsTimer = setTimeout(() => {
+          void this.repository.updateUserSettings(settings).catch((error) => {
+            console.error('Settings sync failed:', error);
+          });
+        }, 800);
       }
     });
 
     this.pathTimer = setInterval(() => {
+      if (!this.showOptimalPath()) {
+        if (this.activeStepIndex() !== 0) this.activeStepIndex.set(0);
+        return;
+      }
       const sequence = this.optimalSequence();
       if (sequence.length > 0) {
         this.activeStepIndex.update((value) => (value + 1) % sequence.length);
@@ -280,6 +302,8 @@ export class PatternManagerService implements OnDestroy {
       clearInterval(this.pathTimer);
       this.pathTimer = null;
     }
+    if (this.saveTimer) clearTimeout(this.saveTimer);
+    if (this.settingsTimer) clearTimeout(this.settingsTimer);
   }
 
   notify(message: string, durationMs = 2200): void {
@@ -302,11 +326,7 @@ export class PatternManagerService implements OnDestroy {
         this.activeProjectId.set(ids[0]);
       } else {
         this.activeProjectId.set('');
-        this.pattern.set({
-          m: { r: 0, c: 0, t: 'New Pattern' },
-          l: {},
-          g: [],
-        });
+        this.resetCurrentPattern();
       }
     } else {
       void this.initialize();
@@ -433,11 +453,7 @@ export class PatternManagerService implements OnDestroy {
       }
 
       if (!this.activeProjectId() && ids.length === 0) {
-        this.pattern.set({
-          m: { r: 0, c: 0, t: 'New Pattern' },
-          l: {},
-          g: [],
-        });
+        this.resetCurrentPattern();
       }
     });
   }
@@ -482,14 +498,14 @@ export class PatternManagerService implements OnDestroy {
       if (this.storageMode() === 'local') {
         const loadedLocal = this.loadLocalProject(id);
         if (loadedLocal) {
-          this.pattern.set(loadedLocal);
+          this.setLoadedPattern(loadedLocal);
         }
         return;
       }
 
       const loaded = await this.repository.loadPattern(id);
       if (loaded) {
-        this.pattern.set(loaded);
+        this.setLoadedPattern(loaded);
         this.saveLocalProject(id, loaded);
       }
     } catch (error) {
@@ -507,7 +523,7 @@ export class PatternManagerService implements OnDestroy {
   }
 
   async saveCurrentPattern(): Promise<void> {
-    const currentData = this.pattern();
+    const currentData = this.buildCurrentPattern();
     if (currentData.m.t && currentData.m.t !== 'Loading...') {
       this.saveLocalProject(currentData.m.t, currentData);
 
@@ -516,8 +532,6 @@ export class PatternManagerService implements OnDestroy {
       } else {
         this.refreshLocalProjectList();
       }
-
-      await this.refreshProjectList();
     }
   }
 
@@ -536,7 +550,7 @@ export class PatternManagerService implements OnDestroy {
         },
       };
 
-      this.pattern.set(cleanedData);
+      this.setLoadedPattern(cleanedData);
       this.activeProjectId.set(cleanedData.m.t);
 
       const currentIds = this.projectList();
@@ -563,7 +577,7 @@ export class PatternManagerService implements OnDestroy {
   }
 
   exportProject(): void {
-    const currentData = this.pattern();
+    const currentData = this.buildCurrentPattern();
     if (!currentData || !currentData.m?.t || currentData.m.t === 'Loading...') return;
 
     this.loading.set(true);
@@ -688,7 +702,7 @@ export class PatternManagerService implements OnDestroy {
         this.activeProjectId.set(newTitle);
       }
 
-      this.pattern.set(renamed);
+      this.setLoadedPattern(renamed);
       return;
     }
 
@@ -708,7 +722,7 @@ export class PatternManagerService implements OnDestroy {
       this.activeProjectId.set(newTitle);
     }
 
-    this.pattern.set(renamed);
+    this.setLoadedPattern(renamed);
   }
 
   async deleteProject(title: string) {
@@ -725,11 +739,7 @@ export class PatternManagerService implements OnDestroy {
       this.activeProjectId.set(next);
 
       if (!next) {
-        this.pattern.set({
-          m: { r: 0, c: 0, t: 'New Pattern' },
-          l: {},
-          g: [],
-        });
+        this.resetCurrentPattern();
       }
     }
   }
@@ -755,6 +765,54 @@ export class PatternManagerService implements OnDestroy {
     } catch {
       return null;
     }
+  }
+
+  private buildCurrentPattern(): PatternMatrix {
+    return {
+      ...this.pattern(),
+      progress: this.progress(),
+    };
+  }
+
+  private setLoadedPattern(pattern: PatternMatrix): void {
+    const normalizedProgress = pattern.progress ?? {};
+    const { progress: _progress, ...patternWithoutProgress } = pattern;
+
+    this.pattern.set(patternWithoutProgress);
+    this.progress.set(normalizedProgress);
+    this.initStitchCounts({
+      ...patternWithoutProgress,
+      progress: normalizedProgress,
+    });
+  }
+
+  private resetCurrentPattern(): void {
+    this.setLoadedPattern({
+      m: { r: 0, c: 0, t: 'New Pattern' },
+      l: {},
+      g: [],
+      progress: {},
+    });
+  }
+
+  private initStitchCounts(pattern: PatternMatrix): void {
+    const legend = pattern.l;
+    const progress = pattern.progress ?? {};
+    let total = 0;
+    let done = 0;
+
+    for (let r = 0; r < pattern.g.length; r++) {
+      for (let c = 0; c < pattern.g[r].length; c++) {
+        const def = legend[pattern.g[r][c]];
+        if (!def || def.isBackground) continue;
+        total++;
+        if (progress[`${r},${c}`] === 2) done++;
+      }
+    }
+
+    this._totalStitches.set(total);
+    this._doneStitches.set(done);
+    this.prevPct = total > 0 ? Math.round((done / total) * 100) : 0;
   }
 
   private getBrightness(hex: string): number {
@@ -925,53 +983,75 @@ export class PatternManagerService implements OnDestroy {
    *  - Click done sector      → reset sector to pending
    */
   handleCellClick(row: number, col: number): void {
-    this.pattern.update(current => {
-      const progress = { ...(current.progress ?? {}) };
-      const coordKey = `${row},${col}`;
-      const currentStep = progress[coordKey] ?? 0;
-      const targetKey = current.g[row][col];
+    const current = this.pattern();
+    const previousProgress = this.progress();
+    const progress = { ...previousProgress };
+    const coordKey = `${row},${col}`;
+    const currentStep = progress[coordKey] ?? 0;
+    const targetKey = current.g[row][col];
 
-      // Get sector: clicked cell + same-color immediate neighbors
-      const sector = this.getSector(current.g, row, col, targetKey);
+    // Get sector: clicked cell + same-color immediate neighbors
+    const sector = this.getSector(current.g, row, col, targetKey);
 
-      if (currentStep === 1) {
-        sector.forEach(k => { progress[k] = 2; });
-        this.setActiveSectorKey(null);
-      } else if (currentStep === 2) {
-        sector.forEach(k => { progress[k] = 0; });
-        this.setActiveSectorKey(null);
-      } else {
-        Object.keys(progress).forEach((key) => {
-          if (progress[key] === 1) {
-            progress[key] = 0;
-          }
-        });
+    if (currentStep === 1) {
+      sector.forEach((key) => {
+        progress[key] = 2;
+      });
+      this.setActiveSectorKey(null);
+    } else if (currentStep === 2) {
+      sector.forEach((key) => {
+        progress[key] = 0;
+      });
+      this.setActiveSectorKey(null);
+    } else {
+      Object.keys(progress).forEach((key) => {
+        if (progress[key] === 1) {
+          progress[key] = 0;
+        }
+      });
 
-        sector.forEach(k => { progress[k] = 1; });
-        this.setActiveSectorKey(coordKey);
-      }
+      sector.forEach((key) => {
+        progress[key] = 1;
+      });
+      this.setActiveSectorKey(coordKey);
+    }
 
-      return { ...current, progress };
+    let delta = 0;
+    sector.forEach((key) => {
+      const prev = previousProgress[key] ?? 0;
+      const next = progress[key] ?? 0;
+      if (prev !== 2 && next === 2) delta++;
+      if (prev === 2 && next !== 2) delta--;
     });
 
-    this.saveCurrentPattern();
+    this.progress.set(progress);
+    this._doneStitches.update((value) => value + delta);
+
     this.checkCompletion();
+    this.debouncedSave();
+  }
+
+  private debouncedSave(): void {
+    if (this.saveTimer) clearTimeout(this.saveTimer);
+    this.saveTimer = setTimeout(() => {
+      this.saveTimer = null;
+      const id = this.pattern().m.t;
+      if (!id || id === 'Loading...') return;
+
+      const currentData = this.buildCurrentPattern();
+      this.saveLocalProject(id, currentData);
+
+      if (this.storageMode() === 'cloud') {
+        void this.repository.saveProgressOnly(id, this.progress()).catch((error) => {
+          console.error('Progress sync failed:', error);
+        });
+      }
+    }, 1200);
   }
 
   private checkCompletion(): void {
-    const p = this.pattern();
-    const progress = p.progress ?? {};
-    const legend = p.l as any;
-    let total = 0;
-    let done = 0;
-    for (let r = 0; r < p.g.length; r++) {
-      for (let c = 0; c < p.g[r].length; c++) {
-        const def = legend[p.g[r][c]];
-        if (!def || def.isBackground) continue;
-        total++;
-        if ((progress as any)[r + ',' + c] === 2) done++;
-      }
-    }
+    const total = this._totalStitches();
+    const done = this._doneStitches();
     const pct = total > 0 ? Math.round((done / total) * 100) : 0;
     if (pct === 100 && this.prevPct !== 100) {
       this.onComplete();

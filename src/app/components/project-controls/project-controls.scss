@@ -26,32 +26,84 @@
 }
 
 .fab {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: #1e1e2e;
-  border: 2px solid #89b4fa;
-  color: white;
-  font-size: 22px;
+  background: #e91e8c;
+  border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 1001;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(233, 30, 140, 0.35);
+  transition: transform 0.15s ease;
 
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 28px rgba(137, 180, 250, 0.4);
+  &:hover { transform: scale(1.07); }
+
+  svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
   }
+}
 
-  &.is-open {
-    background: #313244;
-    border-color: #f38ba8;
+.fab-percent {
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  z-index: 1;
+  letter-spacing: -0.3px;
+  pointer-events: none;
+}
+
+.fab-empty {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.5);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.fab-tooltip {
+  position: absolute;
+  bottom: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 0.5px solid #ccc;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 12px;
+  color: #333;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  z-index: 100;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-right: 0.5px solid #ccc;
+    border-bottom: 0.5px solid #ccc;
   }
+}
 
-  .fab-icon { line-height: 1; }
+.fab-wrapper {
+  position: relative;
+  width: 64px;
+  height: 64px;
+
+  &:hover .fab-tooltip {
+    opacity: 1;
+  }
 }
 
 // ── Panel ─────────────────────────────────────────────

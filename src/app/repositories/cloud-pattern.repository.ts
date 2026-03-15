@@ -48,6 +48,13 @@ export class CloudPatternRepository {
     return setDoc(docRef, { ...cloudSafeData, _lastSaved: Date.now() }, { merge: true });
   }
 
+  async saveProgressOnly(id: string, progress: Record<string, number>) {
+    const db = await this.getDb();
+    const { doc, setDoc } = await import('firebase/firestore');
+    const docRef = doc(db, 'patterns', id);
+    return setDoc(docRef, { progress, _lastSaved: Date.now() }, { merge: true });
+  }
+
   async updateUserSettings(settings: {
     pixelSize: number;
     storageMode: 'cloud' | 'local';
