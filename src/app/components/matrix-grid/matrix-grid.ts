@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, computed, HostListener, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, computed, HostListener, ElementRef, ViewChild, effect, AfterViewInit, OnDestroy } from '@angular/core';
 import { PatternManagerService } from '../../services/pattern-manager';
 import { CommonModule } from '@angular/common';
+
+const VIEWPORT_KEY = 'aime_viewport_v1';
 
 @Component({
   selector: 'app-matrix-grid',
@@ -14,12 +16,24 @@ import { CommonModule } from '@angular/common';
     '[style.--pixel-size.px]': 'pixelSize()',
   }
 })
-export class MatrixGridComponent {
+export class MatrixGridComponent implements AfterViewInit, OnDestroy {
   private readonly patternService = inject(PatternManagerService);
   @ViewChild('canvasViewport') private canvasViewport?: ElementRef<HTMLElement>;
+  @ViewChild('gridContainer') gridContainer!: ElementRef<HTMLElement>;
+  private readonly visibilityHandler = () => {
+    if (document.visibilityState === 'hidden') {
+      this.saveViewport();
+    } else if (document.visibilityState === 'visible') {
+      setTimeout(() => this.restoreViewport(), 80);
+    }
+  };
+  private readonly unloadHandler = () => {
+    this.saveViewport();
+  };
 
   protected readonly matrix = this.patternService.pattern;
   protected readonly progress = this.patternService.progress;
+  protected readonly highlightedCells = this.patternService.highlightedCells;
   protected readonly cols = computed(() => this.matrix().m.c || 1);
   protected readonly isLoading = computed(() => this.patternService.remoteResource.isLoading());
   protected readonly midRow = computed(() => Math.floor((this.matrix().m.r ?? 0) / 2));
@@ -41,6 +55,76 @@ export class MatrixGridComponent {
 
     return map;
   });
+
+  constructor() {
+    document.addEventListener('visibilitychange', this.visibilityHandler);
+    window.addEventListener('beforeunload', this.unloadHandler);
+
+    effect(() => {
+      const id = this.patternService.activeProjectId();
+      if (!id) return;
+
+      const raw = localStorage.getItem(VIEWPORT_KEY);
+      if (!raw) return;
+
+      try {
+        const stored = JSON.parse(raw) as { projectId?: string };
+        if (stored.projectId && stored.projectId !== id) {
+          localStorage.removeItem(VIEWPORT_KEY);
+        }
+      } catch {
+        localStorage.removeItem(VIEWPORT_KEY);
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.restoreViewport(), 80);
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('visibilitychange', this.visibilityHandler);
+    window.removeEventListener('beforeunload', this.unloadHandler);
+  }
+
+  private saveViewport(): void {
+    const container = this.gridContainer?.nativeElement;
+    if (!container) return;
+
+    const state = {
+      scrollLeft: container.scrollLeft,
+      scrollTop: container.scrollTop,
+      pixelSize: this.patternService.pixelSize(),
+      projectId: this.patternService.activeProjectId(),
+    };
+
+    localStorage.setItem(VIEWPORT_KEY, JSON.stringify(state));
+  }
+
+  private restoreViewport(): void {
+    const raw = localStorage.getItem(VIEWPORT_KEY);
+    if (!raw) return;
+
+    try {
+      const state = JSON.parse(raw) as {
+        scrollLeft: number;
+        scrollTop: number;
+        pixelSize: number;
+        projectId?: string;
+      };
+
+      if (state.projectId && state.projectId !== this.patternService.activeProjectId()) {
+        return;
+      }
+
+      const container = this.gridContainer?.nativeElement;
+      if (!container) return;
+      container.scrollLeft = state.scrollLeft;
+      container.scrollTop = state.scrollTop;
+    } catch {
+      // ignore corrupt state
+    }
+  }
 
   protected onCellClick(row: number, col: number): void {
     const def = this.matrix().l[this.matrix().g[row][col]] as any;
@@ -112,6 +196,10 @@ export class MatrixGridComponent {
   protected getPathStepIndex(row: number, col: number): number {
     const key = `${row},${col}`;
     return this.pathStepMap().get(key) ?? -1;
+  }
+
+  protected isHighlighted(row: number, col: number): boolean {
+    return this.highlightedCells().has(`${row},${col}`);
   }
 
   @HostListener('document:keydown.space', ['$event'])

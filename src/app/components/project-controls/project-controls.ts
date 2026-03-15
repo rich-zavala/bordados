@@ -6,13 +6,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PathAnimationStyle, PatternManagerService } from '../../services/pattern-manager';
 import { ProjectIngestorService } from '../../services/project-ingestor.service';
+import { ColorEditorComponent } from '../color-editor/color-editor';
 
 type Tab = 'project' | 'statistics' | 'config' | 'aime';
 
 @Component({
   selector: 'app-project-controls',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ColorEditorComponent],
   templateUrl: './project-controls.html',
   styleUrls: ['./project-controls.scss']
 })
@@ -43,9 +44,14 @@ export class ProjectControlsComponent implements OnDestroy {
   activeTab = signal<Tab>('project');
   activeConfigTab = signal<'view' | 'symbols'>('view');
   letterOpen = signal<boolean>(false);
+  editorOpen = signal(false);
+  trashItems = signal<Array<{ title: string; deletedAt: number }>>([]);
   importName = '';
   isRenaming = false;
   renameValue = '';
+  celebrationMessage = signal<string | null>(null);
+  celebrationColor = signal<string>('#e91e8c');
+  private celebrationTimer: ReturnType<typeof setTimeout> | null = null;
 
   private confettiActive = false;
   private confettiFrame: number | null = null;
@@ -53,10 +59,21 @@ export class ProjectControlsComponent implements OnDestroy {
     if (e.key === 'Escape') this.isOpen.update(v => !v);
   };
   private completeHandler = () => this.launchConfetti();
+  private colorCompleteHandler = (e: Event) => {
+    const detail = (e as CustomEvent).detail as {
+      key: string;
+      color: string;
+      name: string;
+      message: string;
+    };
+    this.showColorCelebration(detail.color, detail.message);
+  };
 
   constructor() {
     document.addEventListener('keydown', this.keyHandler);
     window.addEventListener('pattern-complete', this.completeHandler);
+    window.addEventListener('color-complete', this.colorCompleteHandler);
+    this.refreshTrashItems();
   }
 
   getOffset(percent: number): number {
@@ -66,7 +83,26 @@ export class ProjectControlsComponent implements OnDestroy {
   ngOnDestroy() {
     document.removeEventListener('keydown', this.keyHandler);
     window.removeEventListener('pattern-complete', this.completeHandler);
+    window.removeEventListener('color-complete', this.colorCompleteHandler);
     if (this.confettiFrame) cancelAnimationFrame(this.confettiFrame);
+    if (this.celebrationTimer) clearTimeout(this.celebrationTimer);
+  }
+
+  showColorCelebration(color: string, message: string): void {
+    if (this.celebrationTimer) clearTimeout(this.celebrationTimer);
+    this.celebrationColor.set(color);
+    this.celebrationMessage.set(message);
+    this.celebrationTimer = setTimeout(() => {
+      this.celebrationMessage.set(null);
+    }, 4000);
+  }
+
+  getContrastColor(hex: string): string {
+    const h = hex.replace('#', '').padStart(6, '0');
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? '#000000' : '#ffffff';
   }
 
   launchConfetti() {
@@ -147,8 +183,17 @@ export class ProjectControlsComponent implements OnDestroy {
     const current = this.activeId();
     if (!current) return;
     if (confirm('Delete "' + current + '"? This cannot be undone.')) {
-      this.manager.deleteProject(current);
+      void this.manager.deleteProject(current).finally(() => this.refreshTrashItems());
     }
+  }
+
+  recoverProject(title: string): void {
+    void this.manager.recoverFromTrash(title).then((ok) => {
+      if (ok) {
+        this.manager.notify('"' + title + '" recuperado');
+      }
+      this.refreshTrashItems();
+    });
   }
 
   exportCurrent() {
@@ -176,5 +221,9 @@ export class ProjectControlsComponent implements OnDestroy {
     } finally {
       if (this.fileInput) this.fileInput.nativeElement.value = '';
     }
+  }
+
+  private refreshTrashItems(): void {
+    this.trashItems.set(this.manager.getTrashItems());
   }
 }

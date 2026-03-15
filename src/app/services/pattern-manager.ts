@@ -1,5 +1,5 @@
 import { Injectable, signal, inject, effect, OnDestroy, computed } from '@angular/core';
-import { PatternMatrix } from '../models/pattern-matrix.model';
+import { PatternMatrix, ColorConfiguration, SymbolDefinition } from '../models/pattern-matrix.model';
 import { CloudPatternRepository } from '../repositories/cloud-pattern.repository';
 
 export type HighlightStyle = {
@@ -17,6 +17,14 @@ interface Coord {
 
 const ACTIVE_SECTOR_KEY = 'active_sector_key';
 const LEGACY_ACTIVE_SECTOR_KEY = 'active_key';
+const TRASH_PREFIX = 'trash_';
+const TRASH_RETENTION_MS = 48 * 60 * 60 * 1000;
+
+type TrashItem = {
+  data: string;
+  deletedAt: number;
+  title: string;
+};
 
 const FAVORITE_CORE_STYLES: HighlightStyle[] = [
   { name: 'Classic Blue', css: 'background: rgba(52, 152, 219, 0.4); border: 2px solid #2980b9;' },
@@ -77,7 +85,15 @@ export class PatternManagerService implements OnDestroy {
   private inProgressKey = signal<string | null>(
     localStorage.getItem(ACTIVE_SECTOR_KEY) ?? localStorage.getItem(LEGACY_ACTIVE_SECTOR_KEY)
   );
+  readonly lastPosition = computed(() => {
+    const key = this.inProgressKey();
+    if (!key) return null;
+    const [r, c] = key.split(',').map(Number);
+    if (!Number.isFinite(r) || !Number.isFinite(c)) return null;
+    return { row: r, col: c, key };
+  });
   private prevPct = 0;
+  private prevSymbolPcts: Record<string, number> = {};
   private cloudUnsubscribe: (() => void) | null = null;
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
   private pathTimer: ReturnType<typeof setInterval> | null = null;
@@ -98,11 +114,22 @@ export class PatternManagerService implements OnDestroy {
   readonly showOptimalPath = signal<boolean>(
     localStorage.getItem('show_path') === 'true'
   );
+  readonly highlightedCells = signal<Set<string>>(new Set());
   readonly animationStyle = signal<PathAnimationStyle>(
     (localStorage.getItem('anim_style') as PathAnimationStyle) || 'numbers'
   );
   readonly activeStepIndex = signal<number>(0);
   readonly progress = signal<Record<string, number>>({});
+  readonly activeConfiguration = computed(() => {
+    const pattern = this.pattern();
+    return pattern.activeConfiguration ?? 'original';
+  });
+
+  readonly configurations = computed(() => {
+    const pattern = this.pattern();
+    const configs = pattern.configurations ?? {};
+    return configs;
+  });
   readonly highlightStyles: HighlightStyle[] = FINAL_STYLES;
   readonly optimalSequence = computed(() => {
     if (!this.showOptimalPath()) return [] as string[];
@@ -248,7 +275,7 @@ export class PatternManagerService implements OnDestroy {
 
       localStorage.setItem('activeProjectId', id);
       void this.loadProjectById(id);
-    }, { allowSignalWrites: true });
+    });
 
     effect(() => {
       const settings = {
@@ -289,6 +316,104 @@ export class PatternManagerService implements OnDestroy {
     }, 200);
 
     void this.initialize();
+  }
+
+  saveConfiguration(label: string): void {
+    const pattern = this.pattern();
+    const key = `config_${Date.now()}`;
+
+    const configs = { ...(pattern.configurations ?? {}) };
+    if (!configs['original']) {
+      configs['original'] = {
+        label: 'Original',
+        legend: JSON.parse(JSON.stringify(pattern.l)),
+        createdAt: Date.now(),
+      };
+    }
+
+    configs[key] = {
+      label: label.trim() || `Configuración ${Object.keys(configs).length}`,
+      legend: JSON.parse(JSON.stringify(pattern.l)),
+      createdAt: Date.now(),
+    };
+
+    this.pattern.update((current) => ({
+      ...current,
+      configurations: configs,
+      activeConfiguration: key,
+    }));
+
+    void this.saveCurrentPattern();
+    this.notify(`Configuración "${configs[key].label}" guardada`);
+  }
+
+  switchConfiguration(key: string): void {
+    const pattern = this.pattern();
+    const configs = pattern.configurations ?? {};
+
+    let targetLegend: Record<string, SymbolDefinition>;
+
+    if (key === 'original') {
+      targetLegend = configs['original']?.legend
+        ?? JSON.parse(JSON.stringify(pattern.l));
+    } else {
+      const config = configs[key];
+      if (!config) return;
+      targetLegend = config.legend;
+    }
+
+    this.pattern.update((current) => ({
+      ...current,
+      l: JSON.parse(JSON.stringify(targetLegend)),
+      activeConfiguration: key,
+    }));
+
+    void this.saveCurrentPattern();
+  }
+
+  deleteConfiguration(key: string): void {
+    if (key === 'original') return;
+
+    const pattern = this.pattern();
+    const configs = { ...(pattern.configurations ?? {}) };
+    const label = configs[key]?.label ?? key;
+    delete configs[key];
+
+    const nextActive = pattern.activeConfiguration === key
+      ? 'original'
+      : (pattern.activeConfiguration ?? 'original');
+
+    const originalLegend = configs['original']?.legend;
+    const shouldRestoreLegend = pattern.activeConfiguration === key && originalLegend;
+
+    this.pattern.update((current) => ({
+      ...current,
+      l: shouldRestoreLegend
+        ? JSON.parse(JSON.stringify(originalLegend))
+        : current.l,
+      configurations: configs,
+      activeConfiguration: nextActive,
+    }));
+
+    void this.saveCurrentPattern();
+    this.notify(`Configuración "${label}" eliminada`);
+  }
+
+  ensureOriginalFrozen(): void {
+    const pattern = this.pattern();
+    if (pattern.configurations?.['original']) return;
+
+    this.pattern.update((current) => ({
+      ...current,
+      configurations: {
+        ...(current.configurations ?? {}),
+        original: {
+          label: 'Original',
+          legend: JSON.parse(JSON.stringify(current.l)),
+          createdAt: Date.now(),
+        },
+      },
+    }));
   }
 
   ngOnDestroy(): void {
@@ -654,12 +779,18 @@ export class PatternManagerService implements OnDestroy {
     const title = rawTitle || 'Imported Pattern ' + Date.now();
 
     const progress = this.normalizeProgress(root['progress']);
+    const configurations = this.normalizeConfigurations(root['configurations']);
+    const activeConfiguration = typeof root['activeConfiguration'] === 'string'
+      ? root['activeConfiguration']
+      : undefined;
 
     return {
       m: { r: rows, c: cols, t: title },
       l: legend as PatternMatrix['l'],
       g: grid,
       progress,
+      configurations,
+      activeConfiguration,
     };
   }
 
@@ -677,6 +808,30 @@ export class PatternManagerService implements OnDestroy {
     }
 
     return normalized;
+  }
+
+  private normalizeConfigurations(
+    raw: unknown
+  ): Record<string, ColorConfiguration> | undefined {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+
+    const result: Record<string, ColorConfiguration> = {};
+
+    for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+
+      const entry = value as Record<string, unknown>;
+      if (typeof entry['label'] !== 'string') continue;
+      if (!entry['legend'] || typeof entry['legend'] !== 'object') continue;
+
+      result[key] = {
+        label: entry['label'],
+        legend: entry['legend'] as Record<string, SymbolDefinition>,
+        createdAt: typeof entry['createdAt'] === 'number' ? entry['createdAt'] : Date.now(),
+      };
+    }
+
+    return Object.keys(result).length > 0 ? result : undefined;
   }
 
   private asRecord(value: unknown): Record<string, unknown> {
@@ -725,7 +880,9 @@ export class PatternManagerService implements OnDestroy {
     this.setLoadedPattern(renamed);
   }
 
-  async deleteProject(title: string) {
+  async deleteProject(title: string): Promise<void> {
+    this.saveToTrash(title);
+
     if (this.storageMode() === 'cloud') {
       await this.repository.deletePattern(title);
       await this.refreshProjectList();
@@ -742,6 +899,55 @@ export class PatternManagerService implements OnDestroy {
         this.resetCurrentPattern();
       }
     }
+  }
+
+  async recoverFromTrash(title: string): Promise<boolean> {
+    const raw = localStorage.getItem(TRASH_PREFIX + title);
+    if (!raw) return false;
+
+    try {
+      const trash = JSON.parse(raw) as TrashItem;
+      localStorage.setItem(this.localPrefix + trash.title, trash.data);
+      localStorage.removeItem(TRASH_PREFIX + title);
+
+      const recoveredPattern = JSON.parse(trash.data) as PatternMatrix;
+      if (this.storageMode() === 'cloud') {
+        await this.repository.saveProgress(trash.title, recoveredPattern);
+        await this.refreshProjectList();
+      } else {
+        this.refreshLocalProjectList();
+      }
+
+      this.activeProjectId.set(trash.title);
+      this.setLoadedPattern(recoveredPattern);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  getTrashItems(): Array<{ title: string; deletedAt: number }> {
+    const cutoff = Date.now() - TRASH_RETENTION_MS;
+
+    return Object.keys(localStorage)
+      .filter((key) => key.startsWith(TRASH_PREFIX))
+      .map((key) => {
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) return null;
+
+          const trash = JSON.parse(raw) as TrashItem;
+          if (trash.deletedAt < cutoff) {
+            localStorage.removeItem(key);
+            return null;
+          }
+
+          return { title: trash.title, deletedAt: trash.deletedAt };
+        } catch {
+          return null;
+        }
+      })
+      .filter((trash): trash is { title: string; deletedAt: number } => trash !== null);
   }
 
   private refreshLocalProjectList(): void {
@@ -767,6 +973,14 @@ export class PatternManagerService implements OnDestroy {
     }
   }
 
+  getCurrentPattern(): PatternMatrix {
+    return this.buildCurrentPattern();
+  }
+
+  restorePattern(pattern: PatternMatrix): void {
+    this.setLoadedPattern(pattern);
+  }
+
   private buildCurrentPattern(): PatternMatrix {
     return {
       ...this.pattern(),
@@ -780,6 +994,7 @@ export class PatternManagerService implements OnDestroy {
 
     this.pattern.set(patternWithoutProgress);
     this.progress.set(normalizedProgress);
+    this.highlightedCells.set(new Set());
     this.initStitchCounts({
       ...patternWithoutProgress,
       progress: normalizedProgress,
@@ -793,6 +1008,27 @@ export class PatternManagerService implements OnDestroy {
       g: [],
       progress: {},
     });
+  }
+
+  private saveToTrash(title: string): void {
+    let raw = localStorage.getItem(this.localPrefix + title);
+
+    if (!raw) {
+      const current = this.buildCurrentPattern();
+      if (current.m.t === title) {
+        raw = JSON.stringify({ ...current, _lastSaved: Date.now() });
+      }
+    }
+
+    if (!raw) return;
+
+    const trash: TrashItem = {
+      data: raw,
+      deletedAt: Date.now(),
+      title,
+    };
+
+    localStorage.setItem(TRASH_PREFIX + title, JSON.stringify(trash));
   }
 
   private initStitchCounts(pattern: PatternMatrix): void {
@@ -1050,8 +1286,45 @@ export class PatternManagerService implements OnDestroy {
   }
 
   private checkCompletion(): void {
-    const total = this._totalStitches();
-    const done = this._doneStitches();
+    const p = this.pattern();
+    const progress = p.progress ?? {};
+    const legend = p.l as any;
+
+    const symbolTotals: Record<string, number> = {};
+    const symbolDone: Record<string, number> = {};
+
+    let total = 0;
+    let done = 0;
+
+    for (let r = 0; r < p.g.length; r++) {
+      for (let c = 0; c < p.g[r].length; c++) {
+        const def = legend[p.g[r][c]];
+        if (!def || def.isBackground) continue;
+        const symbolKey = p.g[r][c];
+
+        total++;
+        symbolTotals[symbolKey] = (symbolTotals[symbolKey] ?? 0) + 1;
+
+        if (progress[`${r},${c}`] === 2) {
+          done++;
+          symbolDone[symbolKey] = (symbolDone[symbolKey] ?? 0) + 1;
+        }
+      }
+    }
+
+    for (const key of Object.keys(symbolTotals)) {
+      const symTotal = symbolTotals[key] ?? 0;
+      const symDone = symbolDone[key] ?? 0;
+      const symPct = symTotal > 0 ? Math.round((symDone / symTotal) * 100) : 0;
+      const prevPct = this.prevSymbolPcts[key] ?? 0;
+
+      if (symPct === 100 && prevPct < 100) {
+        this.onColorComplete(key, legend[key], symTotal);
+      }
+
+      this.prevSymbolPcts[key] = symPct;
+    }
+
     const pct = total > 0 ? Math.round((done / total) * 100) : 0;
     if (pct === 100 && this.prevPct !== 100) {
       this.onComplete();
@@ -1061,6 +1334,48 @@ export class PatternManagerService implements OnDestroy {
 
   private onComplete(): void {
     window.dispatchEvent(new CustomEvent('pattern-complete'));
+  }
+
+  private onColorComplete(
+    key: string,
+    def: SymbolDefinition,
+    stitchCount: number
+  ): void {
+    const p = this.pattern();
+    const progress = p.progress ?? {};
+    const legend = p.l as any;
+    const symbolTotals: Record<string, number> = {};
+    const symbolDone: Record<string, number> = {};
+
+    for (let r = 0; r < p.g.length; r++) {
+      for (let c = 0; c < p.g[r].length; c++) {
+        const d = legend[p.g[r][c]];
+        if (!d || d.isBackground) continue;
+        const sk = p.g[r][c];
+        symbolTotals[sk] = (symbolTotals[sk] ?? 0) + 1;
+        if (progress[`${r},${c}`] === 2) {
+          symbolDone[sk] = (symbolDone[sk] ?? 0) + 1;
+        }
+      }
+    }
+
+    const remainingColors = Object.keys(symbolTotals).filter(sk => {
+      const t = symbolTotals[sk] ?? 0;
+      const d = symbolDone[sk] ?? 0;
+      return sk !== key && t > 0 && d < t;
+    }).length;
+
+    const colorName = def?.n
+      ? def.n.split(' - ').pop() ?? def.n
+      : key;
+
+    const message = remainingColors === 0
+      ? `¡Terminaste ${colorName}! El patrón está completo.`
+      : `¡Terminaste ${colorName}! Quedan ${remainingColors} color${remainingColors === 1 ? '' : 'es'}.`;
+
+    window.dispatchEvent(new CustomEvent('color-complete', {
+      detail: { key, color: def?.b ?? '#e91e8c', name: colorName, message, stitchCount }
+    }));
   }
 
   /**

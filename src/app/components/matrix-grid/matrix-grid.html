@@ -1,10 +1,11 @@
-<div class="canvas-viewport" #canvasViewport>
+<div class="canvas-viewport" #canvasViewport #gridContainer>
   <div class="matrix-container">
     <div class="grid-container" [style.grid-template-columns]="'repeat(' + matrix().m.c + ', 1fr)'">
   <ng-container *ngFor="let row of matrix().g; let rowIndex = index">
     <div *ngFor="let cell of row; let colIndex = index"
          class="stitch-square"
          [class.is-done]="getStep(rowIndex, colIndex) === 2"
+          [class.is-highlighted]="isHighlighted(rowIndex, colIndex)"
          [attr.data-coord]="rowIndex + ',' + colIndex"
          [attr.data-step]="getStep(rowIndex, colIndex)"
          [class.mid-row]="rowIndex === midRow()"
@@ -46,6 +47,10 @@
 
       @if (currentStep === 2) {
         <div class="true-color-overlay"></div>
+      }
+
+      @if (isHighlighted(rowIndex, colIndex)) {
+        <div class="stash-highlight-overlay"></div>
       }
     </div>
       </ng-container>

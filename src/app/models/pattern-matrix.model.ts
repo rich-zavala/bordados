@@ -1,20 +1,27 @@
 export interface SymbolDefinition {
-  s: string;  // symbol
-  c: string;  // innerColor (text color)
-  b: string;  // bgColor
+  s: string;
+  c: string;
+  b: string;
   n?: string;
   isBackground?: boolean;
 }
 
+export interface ColorConfiguration {
+  label: string;
+  legend: Record<string, SymbolDefinition>;
+  createdAt: number;
+}
+
 export interface PatternMatrix {
-  m: {        // metadata
-    r: number; // rows
-    c: number; // cols
-    t: string; // title
+  m: {
+    r: number;
+    c: number;
+    t: string;
   };
-  l: Record<string, SymbolDefinition>; // legend
-  g: string[][]; // grid (just the keys)
-  
-  // Local-only state (we keep this for the UI)
-  progress?: Record<string, number>; // key "row,col" -> step
+  l: Record<string, SymbolDefinition>;
+  g: string[][];
+  progress?: Record<string, number>;
+
+  configurations?: Record<string, ColorConfiguration>;
+  activeConfiguration?: string;
 }

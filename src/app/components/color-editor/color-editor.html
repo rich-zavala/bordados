@@ -1,0 +1,220 @@
+<div class="editor-overlay">
+  <div class="editor-modal">
+
+    <div class="modal-header">
+      <span class="modal-title">Editor de colores</span>
+      <span class="modal-subtitle">{{ manager.pattern().m.t }}</span>
+      <button class="modal-close" (click)="close.emit()">✕</button>
+    </div>
+
+    <div class="modal-tabs">
+      <button [class.active]="activeTab() === 'simplify'" (click)="activeTab.set('simplify')">
+        Simplificar patrón
+      </button>
+      <button [class.active]="activeTab() === 'stash'" (click)="activeTab.set('stash')">
+        Mis hilos
+        @if (stash.threads().length) {
+          <span class="tab-badge">{{ stash.threads().length }}</span>
+        }
+      </button>
+    </div>
+
+    @if (coveragePercent() !== null) {
+      <div class="coverage-banner" [class.banner-good]="coveragePercent()! >= 70">
+        Tienes el <strong>{{ coveragePercent() }}%</strong> de los colores cubiertos con tu colección.
+        @if (coveragePercent()! < 100) {
+          Los demás se sustituirán con el hilo más cercano disponible.
+        }
+      </div>
+    }
+
+    <div class="modal-body">
+      <div class="config-bar">
+        <div class="config-chips">
+          @for (cfg of configList(); track cfg.key) {
+            <div class="config-chip"
+              [class.active]="cfg.isActive"
+              [class.protected]="cfg.isProtected">
+              <button class="chip-label" (click)="switchConfig(cfg.key)">
+                {{ cfg.label }}
+              </button>
+              @if (!cfg.isProtected) {
+                <button class="chip-delete" (click)="deleteConfig(cfg.key)">✕</button>
+              }
+            </div>
+          }
+
+          @if (!showSaveForm()) {
+            <button class="chip-add" (click)="showSaveForm.set(true)">+ Guardar actual</button>
+          }
+        </div>
+
+        @if (showSaveForm()) {
+          <div class="save-form">
+            <input
+              type="text"
+              placeholder="Nombre (ej: Simplificado, Mis hilos...)"
+              [ngModel]="configLabel()"
+              (ngModelChange)="configLabel.set($event)"
+              (keyup.enter)="saveConfig()"
+              (keyup.escape)="showSaveForm.set(false)"
+              autofocus>
+            <button class="btn-primary btn-small-primary" (click)="saveConfig()">Guardar</button>
+            <button class="btn-cancel" (click)="showSaveForm.set(false)">Cancelar</button>
+          </div>
+        }
+
+        @if (configList().length > 1) {
+          <p class="config-note">
+            El progreso se comparte entre todas las configuraciones — refleja lo que está bordado en la tela.
+          </p>
+        }
+      </div>
+
+      <hr class="sep">
+
+      @if (activeTab() === 'simplify') {
+        <div class="dial-section">
+          <div class="dial-row">
+            <span class="dial-label">Sin fusionar</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              [ngModel]="simplifyDial()"
+              (ngModelChange)="simplifyDial.set($event)"
+              class="dial-slider">
+            <span class="dial-label">Un color</span>
+          </div>
+
+          <div class="dial-feedback">
+            @if (simplifyDial() === 0) {
+              <span class="dial-neutral">Mueve el dial para previsualizar</span>
+            } @else if (simplifyPreview().colorsAfter === simplifyPreview().colorsNow) {
+              <span class="dial-neutral">Sin cambios a este nivel</span>
+            } @else {
+              <span class="dial-result">
+                {{ simplifyPreview().colorsNow }} hilos
+                <span class="dial-arrow">→</span>
+                <strong>{{ simplifyPreview().colorsAfter }} hilos</strong>
+              </span>
+            }
+          </div>
+
+          <button
+            class="btn-primary"
+            [disabled]="simplifyDial() === 0 || simplifyPreview().colorsAfter === simplifyPreview().colorsNow"
+            (click)="autoSimplifyAll()">
+            Aplicar fusión
+          </button>
+        </div>
+
+        <hr class="sep">
+
+        @if (mergeSuggestions().length === 0) {
+          <div class="empty-state">No hay colores similares para fusionar.</div>
+        } @else {
+          <div class="suggestions-label">Fusiones recomendadas</div>
+          @for (s of mergeSuggestions(); track s.keepKey) {
+            <div class="suggestion-row">
+              <div class="swatch-group">
+                @for (key of s.dropKeys; track key) {
+                  <div class="swatch-sm drop"
+                    [style.background]="manager.pattern().l[key]?.b"
+                    [title]="manager.pattern().l[key]?.n ?? key">
+                  </div>
+                }
+                <span class="arrow">→</span>
+                <div class="swatch-sm keep"
+                  [style.background]="manager.pattern().l[s.keepKey]?.b"
+                  [title]="manager.pattern().l[s.keepKey]?.n ?? s.keepKey">
+                </div>
+              </div>
+              <span class="suggestion-label">{{ s.reason }}</span>
+              <button class="btn-small btn-green" (click)="applySuggestion(s)">Fusionar</button>
+            </div>
+          }
+        }
+      }
+
+      @if (activeTab() === 'stash') {
+        <div class="bulk-area">
+          <label class="field-label">Añade tus hilos (números DMC o Anchor, separados por coma)</label>
+          <textarea
+            [ngModel]="bulkInput()"
+            (ngModelChange)="bulkInput.set($event)"
+            placeholder="Ej: 310, 666, 722, 3820, blanc"
+            rows="2">
+          </textarea>
+          <button class="btn-primary" [disabled]="bulkLoading()" (click)="addBulk()">
+            {{ bulkLoading() ? 'Buscando...' : 'Añadir a mi colección' }}
+          </button>
+          @if (bulkErrors().length) {
+            <div class="error-list">
+              @for (e of bulkErrors(); track e) {
+                <span class="error-chip">{{ e }}</span>
+              }
+            </div>
+          }
+        </div>
+
+        @if (stash.threads().length) {
+          <div class="stash-chips">
+            @for (t of stash.threads(); track t.id) {
+              <div class="thread-chip"
+                [class.highlighted]="highlightedThreadId() === t.id"
+                (mouseenter)="highlightedThreadId.set(t.id)"
+                (mouseleave)="highlightedThreadId.set(null)">
+                <div class="chip-swatch" [style.background]="t.hex"></div>
+                <span>{{ t.id }}</span>
+                <button class="chip-remove" (click)="stash.remove(t.id)">✕</button>
+              </div>
+            }
+          </div>
+
+          <hr class="sep">
+
+          <div class="matches-header">
+            <span class="section-label">Propuesta de sustitución</span>
+            <button class="btn-primary" (click)="applyAllGoodMatches()">
+              Aplicar Excelentes y Buenos
+            </button>
+          </div>
+
+          @for (m of inventoryMatches(); track m.legendKey) {
+            <div class="match-row">
+              <div class="swatch-sm" [style.background]="m.patternHex" [title]="m.patternName"></div>
+              <span class="match-name">{{ m.patternName }}</span>
+              <span class="arrow-sm">→</span>
+              <div class="swatch-sm"
+                [style.background]="m.matchThread.hex"
+                [title]="m.matchThread.id"
+                (mouseenter)="highlightedThreadId.set(m.matchThread.id)"
+                (mouseleave)="highlightedThreadId.set(null)">
+              </div>
+              <span class="match-dmc">DMC {{ m.matchThread.id }}</span>
+              <span class="quality-badge" [class]="qualityClass(m.quality)">
+                {{ qualityLabel(m.quality) }}
+              </span>
+            </div>
+          }
+        } @else {
+          <div class="empty-state">Añade tus hilos arriba para ver sustituciones.</div>
+        }
+      }
+
+      @if (snapshots().length) {
+        <hr class="sep">
+        <div class="section-label">Historial de cambios</div>
+        @for (s of snapshots(); track s.id) {
+          <div class="snapshot-row">
+            <span class="snapshot-label">{{ s.label }}</span>
+            <span class="snapshot-time">{{ s.createdAt | date:'HH:mm' }}</span>
+            <button class="btn-small" (click)="restoreSnapshot(s)">Restaurar</button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

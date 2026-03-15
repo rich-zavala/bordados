@@ -46,6 +46,12 @@
     opacity: 1;
   }
 
+  &.is-highlighted {
+    outline: 2px solid #e91e8c;
+    outline-offset: -2px;
+    z-index: 12;
+  }
+
   &.is-active {
     opacity: 1;
     z-index: 5;
@@ -182,6 +188,15 @@
   z-index: 10;
 }
 
+.stash-highlight-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(233, 30, 140, 0.18);
+  border: 1px solid rgba(233, 30, 140, 0.7);
+  pointer-events: none;
+  z-index: 11;
+}
+
 @keyframes dash {
   to {
     stroke-dashoffset: -1000;
@@ -196,5 +211,17 @@
   50% {
     box-shadow: 0 0 0 8px rgba(84, 160, 255, 0);
   }
+}
+
+@keyframes resume-pulse {
+  0%   { box-shadow: 0 0 0 0px rgba(233, 30, 140, 0.6); }
+  50%  { box-shadow: 0 0 0 6px rgba(233, 30, 140, 0); }
+  100% { box-shadow: 0 0 0 0px rgba(233, 30, 140, 0); }
+}
+
+.resume-pulse {
+  animation: resume-pulse 1.2s ease-out 3;
+  position: relative;
+  z-index: 2;
 }
 

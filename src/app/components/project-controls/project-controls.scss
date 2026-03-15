@@ -13,6 +13,28 @@
   z-index: 9999;
 }
 
+.color-celebration {
+  position: fixed;
+  left: 50%;
+  bottom: 80px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: celebration-in-out 4s ease forwards;
+}
+
+@keyframes celebration-in-out {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  10%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+}
+
 // ── Floating button ───────────────────────────────────
 .floating-container {
   position: fixed;
@@ -215,6 +237,27 @@
   &:hover  { background: #45475a; }
   &.danger { color: #f38ba8; &:hover { background: #3d2030; } }
   &.confirm { color: #a6e3a1; &:hover { background: #1e3a2f; } }
+}
+
+.trash-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #bac2de;
+
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .text-btn {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
 }
 
 .upload-btn {

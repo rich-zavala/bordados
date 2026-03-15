@@ -1,5 +1,15 @@
 <canvas #confettiCanvas class="confetti-canvas"></canvas>
 
+@if (celebrationMessage()) {
+  <div class="color-celebration"
+       [style.background]="celebrationColor()"
+       [style.color]="getContrastColor(celebrationColor())"
+       role="status"
+       aria-live="polite">
+    {{ celebrationMessage() }}
+  </div>
+}
+
 <div class="floating-container">
   <div class="fab-wrapper">
 
@@ -63,6 +73,16 @@
         <button class="text-btn" (click)="startRename()">✏️ Renombrar</button>
         <button class="text-btn danger" (click)="deleteCurrent()">🗑️ Eliminar</button>
       </div>
+      @if (trashItems().length) {
+        <div class="trash-hint">
+          @for (item of trashItems(); track item.title) {
+            <span>
+              "{{ item.title }}" eliminado —
+              <button class="text-btn confirm" (click)="recoverProject(item.title)">Recuperar</button>
+            </span>
+          }
+        </div>
+      }
       <div class="field" *ngIf="isRenaming">
         <input [(ngModel)]="renameValue"
                (keyup.enter)="confirmRename()"
@@ -86,6 +106,13 @@
           </button>
         </div>
       </div>
+
+      <hr />
+      <button class="text-btn" (click)="editorOpen.set(true)">🎨 Editor de colores</button>
+
+      @if (editorOpen()) {
+        <app-color-editor (close)="editorOpen.set(false)"></app-color-editor>
+      }
     </div>
 
     <!-- STATISTICS -->

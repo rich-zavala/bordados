@@ -155,11 +155,18 @@ export class CloudPatternRepository {
     }
 
     const data = raw as PatternMatrix & { g: unknown; m: { r: number; c: number; t: string } };
+    const source = raw as PatternMatrix;
+    const configurations = source.configurations ?? undefined;
+    const activeConfiguration = source.activeConfiguration ?? undefined;
     const rows = Number(data.m?.r ?? 0);
     const cols = Number(data.m?.c ?? 0);
 
     if (Array.isArray(data.g) && data.g.length > 0 && Array.isArray(data.g[0])) {
-      return data as PatternMatrix;
+      return {
+        ...(data as PatternMatrix),
+        configurations,
+        activeConfiguration,
+      };
     }
 
     if (Array.isArray(data.g)) {
@@ -175,12 +182,16 @@ export class CloudPatternRepository {
       return {
         ...data,
         g: grid2D,
+        configurations,
+        activeConfiguration,
       };
     }
 
     return {
       ...data,
       g: [],
+      configurations,
+      activeConfiguration,
     };
   }
 }
