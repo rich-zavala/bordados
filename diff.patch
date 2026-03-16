@@ -1,0 +1,2416 @@
+diff --git a/.firebase/hosting.ZGlzdC9ib3JkYWRvcy9icm93c2Vy.cache b/.firebase/hosting.ZGlzdC9ib3JkYWRvcy9icm93c2Vy.cache
+index f21a29a..0e5c016 100644
+--- a/.firebase/hosting.ZGlzdC9ib3JkYWRvcy9icm93c2Vy.cache
++++ b/.firebase/hosting.ZGlzdC9ib3JkYWRvcy9icm93c2Vy.cache
+@@ -1,8 +1,8 @@
+ favicon.ico,1771470466555,8f1fc0f94ae643bb8757c3cb49f69bf6cb2228f632cb77c7e47d8ee3995d88a7
+-styles-PV5QTKRU.css,1772420576260,d9e107f583ca68b8d421ffb377c9364b66bb3a3eb2fea58ef86c206150161228
+-chunk-2NFLSA4Y.js,1772420576260,4727bf8443dcc2379d69231b140f84be32ee9c171888f7c7558a9510d168dc24
+-chunk-UOC5BPB7.js,1772420576260,03ffba3553d22f42448ec80ef0ccfebfc7ce72eb3bcbd97d6b74357c2a342ec0
+-index.html,1772420576260,02edb3f17562e5cc90946493319704ff8f3012817c524343e5f17394b58c54ce
+-chunk-4BZA52A3.js,1772420576260,9edbbdc98a0d71166a19712136edbdeeb5b5fdadffccde95da4a77a3cfbd2aa8
+-chunk-A7Z6ZVMZ.js,1772420576260,b0e26ffd2df4de4a922dabfa9027d4d19eb000237a426c38efa3236285bbf3aa
+-main-XUUSVF7J.js,1772420576260,4d99318bc150a168663d98044341d1933c9e2330709e97f64fcfbed6d2dac885
++chunk-7CGTOI24.js,1773613095163,5ea9ebe75ecc9b1c402c9601ceaaac2e35be0061a62a7eb21a76270ea88c62ec
++styles-PV5QTKRU.css,1773613095163,d9e107f583ca68b8d421ffb377c9364b66bb3a3eb2fea58ef86c206150161228
++index.html,1773613095163,b6401e816b292b76667e161f004ae15ed8efb31e697b4ad12e27a7ff38e92058
++chunk-XSXUIH67.js,1773613095163,6fed2dc1243c45c9028e8d396186a6d8eeedf66d5ecd36403c99b2f3ac53564c
++chunk-BEO4CWE5.js,1773613095163,b055465931f1a3ab7a864855372c4e849b0d8e0a2dd4243da3ad0f1ee41cd36e
++chunk-LJGW6FDE.js,1773613095163,b964a840dfcf5d41f3631cb499ddad81b7a9e25b4d264719ae0bf99f61267ece
++main-QGWUG76R.js,1773613095163,233fbaac5de643c1003c2ca4e9762360deca6d7ca04004115f0ff8a4ae3b23fa
+diff --git a/angular.json b/angular.json
+index 087cf2b..5d89b16 100644
+--- a/angular.json
++++ b/angular.json
+@@ -27,6 +27,11 @@
+               {
+                 "glob": "**/*",
+                 "input": "public"
++              },
++              {
++                "glob": "**/*",
++                "input": "src/assets",
++                "output": "assets"
+               }
+             ],
+             "styles": [
+diff --git a/package-lock.json b/package-lock.json
+index 50e7ce8..144e542 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -8,6 +8,7 @@
+       "name": "bordados",
+       "version": "0.0.0",
+       "dependencies": {
++        "@angular/animations": "^21.2.4",
+         "@angular/cdk": "^21.2.0",
+         "@angular/common": "^21.1.0",
+         "@angular/compiler": "^21.1.0",
+@@ -24,6 +25,7 @@
+         "@angular/cli": "^21.1.4",
+         "@angular/compiler-cli": "^21.1.0",
+         "jsdom": "^27.1.0",
++        "sharp": "^0.34.5",
+         "typescript": "~5.9.2",
+         "vitest": "^4.0.8"
+       }
+@@ -324,6 +326,21 @@
+         "yarn": ">= 1.13.0"
+       }
+     },
++    "node_modules/@angular/animations": {
++      "version": "21.2.4",
++      "resolved": "https://registry.npmjs.org/@angular/animations/-/animations-21.2.4.tgz",
++      "integrity": "sha512-hO1P7ks9n7lW3D31bzHohSuoAaj05xJUlK8rZgX8IkH5DLx4qhvfNh0t4bbLuBJLP2r1TaLsQ8KFcemCkFRO2w==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "^2.3.0"
++      },
++      "engines": {
++        "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
++      },
++      "peerDependencies": {
++        "@angular/core": "21.2.4"
++      }
++    },
+     "node_modules/@angular/build": {
+       "version": "21.2.0",
+       "resolved": "https://registry.npmjs.org/@angular/build/-/build-21.2.0.tgz",
+@@ -2384,6 +2401,496 @@
+         "hono": "^4"
+       }
+     },
++    "node_modules/@img/colour": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@img/colour/-/colour-1.1.0.tgz",
++      "integrity": "sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@img/sharp-darwin-arm64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-darwin-arm64/-/sharp-darwin-arm64-0.34.5.tgz",
++      "integrity": "sha512-imtQ3WMJXbMY4fxb/Ndp6HBTNVtWCUI0WdobyheGf5+ad6xX8VIDO8u2xE4qc/fr08CKG/7dDseFtn6M6g/r3w==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-darwin-arm64": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-darwin-x64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-darwin-x64/-/sharp-darwin-x64-0.34.5.tgz",
++      "integrity": "sha512-YNEFAF/4KQ/PeW0N+r+aVVsoIY0/qxxikF2SWdp+NRkmMB7y9LBZAVqQ4yhGCm/H3H270OSykqmQMKLBhBJDEw==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-darwin-x64": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-libvips-darwin-arm64": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-darwin-arm64/-/sharp-libvips-darwin-arm64-1.2.4.tgz",
++      "integrity": "sha512-zqjjo7RatFfFoP0MkQ51jfuFZBnVE2pRiaydKJ1G/rHZvnsrHAOcQALIi9sA5co5xenQdTugCvtb1cuf78Vf4g==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-darwin-x64": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-darwin-x64/-/sharp-libvips-darwin-x64-1.2.4.tgz",
++      "integrity": "sha512-1IOd5xfVhlGwX+zXv2N93k0yMONvUlANylbJw1eTah8K/Jtpi15KC+WSiaX/nBmbm2HxRM1gZ0nSdjSsrZbGKg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-arm": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-arm/-/sharp-libvips-linux-arm-1.2.4.tgz",
++      "integrity": "sha512-bFI7xcKFELdiNCVov8e44Ia4u2byA+l3XtsAj+Q8tfCwO6BQ8iDojYdvoPMqsKDkuoOo+X6HZA0s0q11ANMQ8A==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-arm64": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-arm64/-/sharp-libvips-linux-arm64-1.2.4.tgz",
++      "integrity": "sha512-excjX8DfsIcJ10x1Kzr4RcWe1edC9PquDRRPx3YVCvQv+U5p7Yin2s32ftzikXojb1PIFc/9Mt28/y+iRklkrw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-ppc64": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-ppc64/-/sharp-libvips-linux-ppc64-1.2.4.tgz",
++      "integrity": "sha512-FMuvGijLDYG6lW+b/UvyilUWu5Ayu+3r2d1S8notiGCIyYU/76eig1UfMmkZ7vwgOrzKzlQbFSuQfgm7GYUPpA==",
++      "cpu": [
++        "ppc64"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-riscv64": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-riscv64/-/sharp-libvips-linux-riscv64-1.2.4.tgz",
++      "integrity": "sha512-oVDbcR4zUC0ce82teubSm+x6ETixtKZBh/qbREIOcI3cULzDyb18Sr/Wcyx7NRQeQzOiHTNbZFF1UwPS2scyGA==",
++      "cpu": [
++        "riscv64"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-s390x": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-s390x/-/sharp-libvips-linux-s390x-1.2.4.tgz",
++      "integrity": "sha512-qmp9VrzgPgMoGZyPvrQHqk02uyjA0/QrTO26Tqk6l4ZV0MPWIW6LTkqOIov+J1yEu7MbFQaDpwdwJKhbJvuRxQ==",
++      "cpu": [
++        "s390x"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-x64": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-x64/-/sharp-libvips-linux-x64-1.2.4.tgz",
++      "integrity": "sha512-tJxiiLsmHc9Ax1bz3oaOYBURTXGIRDODBqhveVHonrHJ9/+k89qbLl0bcJns+e4t4rvaNBxaEZsFtSfAdquPrw==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linuxmusl-arm64": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-arm64/-/sharp-libvips-linuxmusl-arm64-1.2.4.tgz",
++      "integrity": "sha512-FVQHuwx1IIuNow9QAbYUzJ+En8KcVm9Lk5+uGUQJHaZmMECZmOlix9HnH7n1TRkXMS0pGxIJokIVB9SuqZGGXw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linuxmusl-x64": {
++      "version": "1.2.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-x64/-/sharp-libvips-linuxmusl-x64-1.2.4.tgz",
++      "integrity": "sha512-+LpyBk7L44ZIXwz/VYfglaX/okxezESc6UxDSoyo2Ks6Jxc4Y7sGjpgU9s4PMgqgjj1gZCylTieNamqA1MF7Dg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-linux-arm": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-arm/-/sharp-linux-arm-0.34.5.tgz",
++      "integrity": "sha512-9dLqsvwtg1uuXBGZKsxem9595+ujv0sJ6Vi8wcTANSFpwV/GONat5eCkzQo/1O6zRIkh0m/8+5BjrRr7jDUSZw==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-arm": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-arm64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-arm64/-/sharp-linux-arm64-0.34.5.tgz",
++      "integrity": "sha512-bKQzaJRY/bkPOXyKx5EVup7qkaojECG6NLYswgktOZjaXecSAeCWiZwwiFf3/Y+O1HrauiE3FVsGxFg8c24rZg==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-arm64": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-ppc64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-ppc64/-/sharp-linux-ppc64-0.34.5.tgz",
++      "integrity": "sha512-7zznwNaqW6YtsfrGGDA6BRkISKAAE1Jo0QdpNYXNMHu2+0dTrPflTLNkpc8l7MUP5M16ZJcUvysVWWrMefZquA==",
++      "cpu": [
++        "ppc64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-ppc64": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-riscv64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-riscv64/-/sharp-linux-riscv64-0.34.5.tgz",
++      "integrity": "sha512-51gJuLPTKa7piYPaVs8GmByo7/U7/7TZOq+cnXJIHZKavIRHAP77e3N2HEl3dgiqdD/w0yUfiJnII77PuDDFdw==",
++      "cpu": [
++        "riscv64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-riscv64": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-s390x": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-s390x/-/sharp-linux-s390x-0.34.5.tgz",
++      "integrity": "sha512-nQtCk0PdKfho3eC5MrbQoigJ2gd1CgddUMkabUj+rBevs8tZ2cULOx46E7oyX+04WGfABgIwmMC0VqieTiR4jg==",
++      "cpu": [
++        "s390x"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-s390x": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-x64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-x64/-/sharp-linux-x64-0.34.5.tgz",
++      "integrity": "sha512-MEzd8HPKxVxVenwAa+JRPwEC7QFjoPWuS5NZnBt6B3pu7EG2Ge0id1oLHZpPJdn3OQK+BQDiw9zStiHBTJQQQQ==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-x64": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-linuxmusl-arm64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linuxmusl-arm64/-/sharp-linuxmusl-arm64-0.34.5.tgz",
++      "integrity": "sha512-fprJR6GtRsMt6Kyfq44IsChVZeGN97gTD331weR1ex1c1rypDEABN6Tm2xa1wE6lYb5DdEnk03NZPqA7Id21yg==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linuxmusl-arm64": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-linuxmusl-x64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linuxmusl-x64/-/sharp-linuxmusl-x64-0.34.5.tgz",
++      "integrity": "sha512-Jg8wNT1MUzIvhBFxViqrEhWDGzqymo3sV7z7ZsaWbZNDLXRJZoRGrjulp60YYtV4wfY8VIKcWidjojlLcWrd8Q==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linuxmusl-x64": "1.2.4"
++      }
++    },
++    "node_modules/@img/sharp-wasm32": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-wasm32/-/sharp-wasm32-0.34.5.tgz",
++      "integrity": "sha512-OdWTEiVkY2PHwqkbBI8frFxQQFekHaSSkUIJkwzclWZe64O1X4UlUjqqqLaPbUpMOQk6FBu/HtlGXNblIs0huw==",
++      "cpu": [
++        "wasm32"
++      ],
++      "dev": true,
++      "license": "Apache-2.0 AND LGPL-3.0-or-later AND MIT",
++      "optional": true,
++      "dependencies": {
++        "@emnapi/runtime": "^1.7.0"
++      },
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-win32-arm64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-win32-arm64/-/sharp-win32-arm64-0.34.5.tgz",
++      "integrity": "sha512-WQ3AgWCWYSb2yt+IG8mnC6Jdk9Whs7O0gxphblsLvdhSpSTtmu69ZG1Gkb6NuvxsNACwiPV6cNSZNzt0KPsw7g==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0 AND LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-win32-ia32": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-win32-ia32/-/sharp-win32-ia32-0.34.5.tgz",
++      "integrity": "sha512-FV9m/7NmeCmSHDD5j4+4pNI8Cp3aW+JvLoXcTUo0IqyjSfAZJ8dIUmijx1qaJsIiU+Hosw6xM5KijAWRJCSgNg==",
++      "cpu": [
++        "ia32"
++      ],
++      "dev": true,
++      "license": "Apache-2.0 AND LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-win32-x64": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.34.5.tgz",
++      "integrity": "sha512-+29YMsqY2/9eFEiW93eqWnuLcWcufowXewwSNIT6UwZdUUCrM3oFjMWH/Z6/TMmb4hlFenmfAVbpWeup2jryCw==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "Apache-2.0 AND LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
+     "node_modules/@inquirer/ansi": {
+       "version": "1.0.2",
+       "resolved": "https://registry.npmjs.org/@inquirer/ansi/-/ansi-1.0.2.tgz",
+@@ -5664,7 +6171,6 @@
+       "integrity": "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==",
+       "dev": true,
+       "license": "Apache-2.0",
+-      "optional": true,
+       "engines": {
+         "node": ">=8"
+       }
+@@ -8444,6 +8950,51 @@
+       "dev": true,
+       "license": "ISC"
+     },
++    "node_modules/sharp": {
++      "version": "0.34.5",
++      "resolved": "https://registry.npmjs.org/sharp/-/sharp-0.34.5.tgz",
++      "integrity": "sha512-Ou9I5Ft9WNcCbXrU9cMgPBcCK8LiwLqcbywW3t4oDV37n1pzpuNLsYiAV8eODnjbtQlSDwZ2cUEeQz4E54Hltg==",
++      "dev": true,
++      "hasInstallScript": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@img/colour": "^1.0.0",
++        "detect-libc": "^2.1.2",
++        "semver": "^7.7.3"
++      },
++      "engines": {
++        "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-darwin-arm64": "0.34.5",
++        "@img/sharp-darwin-x64": "0.34.5",
++        "@img/sharp-libvips-darwin-arm64": "1.2.4",
++        "@img/sharp-libvips-darwin-x64": "1.2.4",
++        "@img/sharp-libvips-linux-arm": "1.2.4",
++        "@img/sharp-libvips-linux-arm64": "1.2.4",
++        "@img/sharp-libvips-linux-ppc64": "1.2.4",
++        "@img/sharp-libvips-linux-riscv64": "1.2.4",
++        "@img/sharp-libvips-linux-s390x": "1.2.4",
++        "@img/sharp-libvips-linux-x64": "1.2.4",
++        "@img/sharp-libvips-linuxmusl-arm64": "1.2.4",
++        "@img/sharp-libvips-linuxmusl-x64": "1.2.4",
++        "@img/sharp-linux-arm": "0.34.5",
++        "@img/sharp-linux-arm64": "0.34.5",
++        "@img/sharp-linux-ppc64": "0.34.5",
++        "@img/sharp-linux-riscv64": "0.34.5",
++        "@img/sharp-linux-s390x": "0.34.5",
++        "@img/sharp-linux-x64": "0.34.5",
++        "@img/sharp-linuxmusl-arm64": "0.34.5",
++        "@img/sharp-linuxmusl-x64": "0.34.5",
++        "@img/sharp-wasm32": "0.34.5",
++        "@img/sharp-win32-arm64": "0.34.5",
++        "@img/sharp-win32-ia32": "0.34.5",
++        "@img/sharp-win32-x64": "0.34.5"
++      }
++    },
+     "node_modules/shebang-command": {
+       "version": "2.0.0",
+       "resolved": "https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz",
+diff --git a/package.json b/package.json
+index ec6f264..ba9be96 100644
+--- a/package.json
++++ b/package.json
+@@ -25,6 +25,7 @@
+   "private": true,
+   "packageManager": "npm@10.9.2",
+   "dependencies": {
++    "@angular/animations": "^21.2.4",
+     "@angular/cdk": "^21.2.0",
+     "@angular/common": "^21.1.0",
+     "@angular/compiler": "^21.1.0",
+@@ -41,6 +42,7 @@
+     "@angular/cli": "^21.1.4",
+     "@angular/compiler-cli": "^21.1.0",
+     "jsdom": "^27.1.0",
++    "sharp": "^0.34.5",
+     "typescript": "~5.9.2",
+     "vitest": "^4.0.8"
+   }
+diff --git a/public/favicon.ico b/public/favicon.ico
+index 57614f9..6b8d1a1 100644
+Binary files a/public/favicon.ico and b/public/favicon.ico differ
+diff --git a/src/app/app.config.ts b/src/app/app.config.ts
+index f84e1a1..1d7f91e 100644
+--- a/src/app/app.config.ts
++++ b/src/app/app.config.ts
+@@ -2,12 +2,14 @@ import { ApplicationConfig, importProvidersFrom } from '@angular/core';
+ import { OverlayModule } from '@angular/cdk/overlay';
+ import { provideRouter } from '@angular/router';
+ import { provideHttpClient } from '@angular/common/http';
++import { provideAnimations } from '@angular/platform-browser/animations';
+ import { routes } from './app.routes';
+ 
+ export const appConfig: ApplicationConfig = {
+   providers: [
+     provideRouter(routes),
+     provideHttpClient(),
++    provideAnimations(),
+     importProvidersFrom(OverlayModule)
+   ]
+ };
+\ No newline at end of file
+diff --git a/src/app/app.html b/src/app/app.html
+index 4e3ef38..edefaca 100644
+--- a/src/app/app.html
++++ b/src/app/app.html
+@@ -1,8 +1,13 @@
+ <ng-container [ngComponentOutlet]="matrixGridComponent"></ng-container>
+ <ng-container [ngComponentOutlet]="projectControlsComponent"></ng-container>
++<app-hotkeys-overlay></app-hotkeys-overlay>
++
++@if (patternManager.showPanoramicView()) {
++	<div class="mode-chip" @modeChip>Vista panorámica — pulsa P o Esc para salir</div>
++}
+ 
+ @if (patternManager.statusMessage()) {
+-	<div class="status-chip" role="status" aria-live="polite">
++	<div class="status-chip" @chip role="status" aria-live="polite">
+ 		{{ patternManager.statusMessage() }}
+ 	</div>
+ }
+\ No newline at end of file
+diff --git a/src/app/app.scss b/src/app/app.scss
+index bce363f..4175075 100644
+--- a/src/app/app.scss
++++ b/src/app/app.scss
+@@ -3,13 +3,31 @@
+ 	left: 50%;
+ 	bottom: 20px;
+ 	transform: translateX(-50%);
++	background: rgba(26, 22, 38, 0.95);
++	color: #e2d9f3;
++	border: 1px solid #3d3554;
++	border-radius: 999px;
++	padding: 10px 14px;
++	font-size: 13px;
++	font-weight: 500;
++	z-index: 10000;
++	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
++}
++
++.mode-chip {
++	position: fixed;
++	top: 16px;
++	left: 50%;
++	transform: translateX(-50%);
+ 	background: rgba(30, 30, 46, 0.92);
+ 	color: #cdd6f4;
+ 	border: 1px solid #45475a;
+ 	border-radius: 999px;
+-	padding: 10px 14px;
++	padding: 8px 16px;
+ 	font-size: 13px;
+ 	font-weight: 500;
+ 	z-index: 10000;
+-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
++	white-space: nowrap;
++	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
++	pointer-events: none;
+ }
+diff --git a/src/app/app.ts b/src/app/app.ts
+index 2d5588d..1cba5bb 100644
+--- a/src/app/app.ts
++++ b/src/app/app.ts
+@@ -1,16 +1,19 @@
+ import { Component, signal, inject, effect } from '@angular/core';
+ import { NgComponentOutlet } from '@angular/common';
+ import { MatrixGridComponent } from './components/matrix-grid/matrix-grid';
++import { HotkeysOverlayComponent } from './components/hotkeys-overlay/hotkeys-overlay';
+ import { ProjectControlsComponent } from './components/project-controls/project-controls';
+ import { PatternManagerService } from './services/pattern-manager';
+ import { LoadingService } from './services/loading.service';
++import { chipAnimation, modeChipAnimation } from './animations';
+ 
+ @Component({
+   selector: 'app-root',
+   standalone: true,
+-  imports: [NgComponentOutlet],
++  imports: [NgComponentOutlet, HotkeysOverlayComponent],
+   templateUrl: './app.html',
+-  styleUrls: ['./app.scss']
++  styleUrls: ['./app.scss'],
++  animations: [chipAnimation, modeChipAnimation]
+ })
+ export class App {
+   protected readonly patternManager = inject(PatternManagerService);
+diff --git a/src/app/components/matrix-grid/matrix-grid.html b/src/app/components/matrix-grid/matrix-grid.html
+index c676376..053f9a7 100644
+--- a/src/app/components/matrix-grid/matrix-grid.html
++++ b/src/app/components/matrix-grid/matrix-grid.html
+@@ -1,59 +1,77 @@
+-<div class="canvas-viewport" #canvasViewport #gridContainer>
+-  <div class="matrix-container">
+-    <div class="grid-container" [style.grid-template-columns]="'repeat(' + matrix().m.c + ', 1fr)'">
+-  <ng-container *ngFor="let row of matrix().g; let rowIndex = index">
+-    <div *ngFor="let cell of row; let colIndex = index"
+-         class="stitch-square"
+-         [class.is-done]="getStep(rowIndex, colIndex) === 2"
+-          [class.is-highlighted]="isHighlighted(rowIndex, colIndex)"
+-         [attr.data-coord]="rowIndex + ',' + colIndex"
+-         [attr.data-step]="getStep(rowIndex, colIndex)"
+-         [class.mid-row]="rowIndex === midRow()"
+-         [class.mid-col]="colIndex === midCol()"
+-         [ngStyle]="getTileStyle(cell, rowIndex, colIndex)"
+-         (click)="onCellClick(rowIndex, colIndex)">
+-      {{ getSymbol(cell, rowIndex, colIndex) }}
++<div class="canvas-viewport" #canvasViewport #gridContainer
++     [class.panoramic-active]="showPanoramicView()">
++  @if (showPanoramicView()) {
++    <div class="p-overlay">
++      <div class="p-card">
++        <canvas #panoramicCanvas></canvas>
++      </div>
++    </div>
++  }
+ 
+-      @let currentStep = getStep(rowIndex, colIndex);
+-      @if (currentStep === 1) {
+-        <div
+-          class="highlight-layer"
+-          [style]="highlightStyles[activeHighlightStyle()]?.css ?? ''">
+-        </div>
+-      }
++  <div class="matrix-container"
++       [style.opacity]="showPanoramicView() ? '0' : '1'"
++       [style.transition]="'opacity 0.4s ease'">
++    <div class="grid-container" [style.grid-template-columns]="'repeat(' + matrix().m.c + ', 1fr)'">
++    <ng-container *ngFor="let row of matrix().g; let rowIndex = index">
++      <ng-container *ngFor="let cell of row; let colIndex = index">
++        @if (!isSimplifiedView() || !isBackgroundCell(cell)) {
++          <div
++            class="stitch-square"
++            [class.is-done]="getStep(rowIndex, colIndex) === 2"
++            [class.is-highlighted]="isHighlighted(rowIndex, colIndex)"
++            [class.panoramic-view]="showPanoramicView()"
++            [attr.data-coord]="rowIndex + ',' + colIndex"
++            [attr.data-step]="isSimplifiedView() ? 2 : getStep(rowIndex, colIndex)"
++            [class.mid-row]="rowIndex === midRow()"
++            [class.mid-col]="colIndex === midCol()"
++            [ngStyle]="getTileStyle(cell, rowIndex, colIndex)"
++            (click)="onCellClick(rowIndex, colIndex)">
++            {{ getSymbol(cell, rowIndex, colIndex) }}
+ 
+-      @if (showOptimalPath()) {
+-        @let sequence = optimalSequence();
+-        @let stepIdx = sequence.indexOf(rowIndex + ',' + colIndex);
+-        @if (stepIdx !== -1) {
+-          <div class="path-overlay-container">
+-            @if (animationStyle() === 'numbers') {
+-              <div class="path-step-number">{{ stepIdx + 1 }}</div>
++            @let currentStep = getStep(rowIndex, colIndex);
++            @if (!isSimplifiedView() && currentStep === 1) {
++              <div
++                class="highlight-layer"
++                [style]="highlightStyles[activeHighlightStyle()]?.css ?? ''">
++              </div>
+             }
+ 
+-            @if (animationStyle() === 'ghost') {
+-              @let activeIdx = activeStepIndex();
+-              @let dist = activeIdx - stepIdx;
+-              @if (dist >= 0 && dist <= 4) {
+-                <div class="rastro-wrapper" [attr.data-ghost-level]="dist">
+-                  <span class="sun-particle">🔅</span>
+-                  <div class="trail-layer"></div>
++            @if (!isSimplifiedView() && showOptimalPath()) {
++              @let sequence = optimalSequence();
++              @let stepIdx = sequence.indexOf(rowIndex + ',' + colIndex);
++              @if (stepIdx !== -1) {
++                <div class="path-overlay-container">
++                  @if (animationStyle() === 'numbers') {
++                    <div class="path-step-number">{{ stepIdx + 1 }}</div>
++                  }
++
++                  @if (animationStyle() === 'ghost') {
++                    @let activeIdx = activeStepIndex();
++                    @let dist = activeIdx - stepIdx;
++                    @if (dist >= 0 && dist <= 4) {
++                      <div class="rastro-wrapper" [attr.data-ghost-level]="dist">
++                        <span class="sun-particle">🔅</span>
++                        <div class="trail-layer"></div>
++                      </div>
++                    }
++                  }
+                 </div>
+               }
+             }
+-          </div>
+-        }
+-      }
+ 
+-      @if (currentStep === 2) {
+-        <div class="true-color-overlay"></div>
+-      }
++            @if (isSimplifiedView() || currentStep === 2) {
++              <div class="true-color-overlay"></div>
++            }
+ 
+-      @if (isHighlighted(rowIndex, colIndex)) {
+-        <div class="stash-highlight-overlay"></div>
+-      }
+-    </div>
++            @if (!isSimplifiedView() && isHighlighted(rowIndex, colIndex)) {
++              <div class="stash-highlight-overlay"></div>
++            }
++          </div>
++        } @else {
++          <div class="stitch-square stitch-invisible"></div>
++        }
+       </ng-container>
++        </ng-container>
+     </div>
+   </div>
+ </div>
+\ No newline at end of file
+diff --git a/src/app/components/matrix-grid/matrix-grid.scss b/src/app/components/matrix-grid/matrix-grid.scss
+index fe968d9..81512ae 100644
+--- a/src/app/components/matrix-grid/matrix-grid.scss
++++ b/src/app/components/matrix-grid/matrix-grid.scss
+@@ -3,12 +3,20 @@
+   height: 100vh;
+   min-height: 0;
+   background-color: #ffffff !important;
++  transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+   overflow-x: auto;
+   overflow-y: auto;
+   position: relative;
+   display: block;
+ }
+ 
++.panoramic-active {
++  background:
++    radial-gradient(ellipse at 30% 20%, #2d1b4e 0%, transparent 60%),
++    radial-gradient(ellipse at 70% 80%, #1a1035 0%, transparent 60%),
++    linear-gradient(160deg, #1a1028 0%, #12091e 50%, #1e1028 100%) !important;
++}
++
+ .matrix-container {
+   display: inline-grid;
+   background-color: #ffffff !important;
+@@ -75,6 +83,46 @@
+     border-top: 2px solid rgba(220, 50, 50, 0.7) !important;
+     border-left: 2px solid rgba(220, 50, 50, 0.7) !important;
+   }
++
++}
++
++.p-overlay {
++  position: absolute;
++  inset: 0;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  z-index: 10;
++  animation: p-fade-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
++}
++
++.p-card {
++  background: white;
++  padding: 24px;
++  border-radius: 4px;
++  box-shadow:
++    0 12px 48px rgba(0, 0, 0, 0.5),
++    0 4px 16px rgba(0, 0, 0, 0.3);
++  line-height: 0;
++}
++
++.p-card canvas {
++  display: block;
++  image-rendering: pixelated;
++  image-rendering: crisp-edges;
++}
++
++@keyframes p-fade-in {
++  from { opacity: 0; transform: scale(0.97); }
++  to { opacity: 1; transform: scale(1); }
++}
++
++.stitch-invisible {
++  background: transparent !important;
++  border: none !important;
++  outline: none !important;
++  box-shadow: none !important;
++  pointer-events: none;
+ }
+ 
+ .stitch-square[data-step='0'] {
+@@ -225,4 +273,3 @@
+   position: relative;
+   z-index: 2;
+ }
+-
+diff --git a/src/app/components/matrix-grid/matrix-grid.ts b/src/app/components/matrix-grid/matrix-grid.ts
+index 6ffc0b0..b5106c1 100644
+--- a/src/app/components/matrix-grid/matrix-grid.ts
++++ b/src/app/components/matrix-grid/matrix-grid.ts
+@@ -1,9 +1,8 @@
+-import { ChangeDetectionStrategy, Component, inject, computed, HostListener, ElementRef, ViewChild, effect, AfterViewInit, OnDestroy } from '@angular/core';
++import { ChangeDetectionStrategy, Component, inject, computed, HostListener, ElementRef, ViewChild, effect, AfterViewInit, OnDestroy, untracked } from '@angular/core';
+ import { PatternManagerService } from '../../services/pattern-manager';
++import { ViewportStateService } from '../../services/viewport-state.service';
+ import { CommonModule } from '@angular/common';
+ 
+-const VIEWPORT_KEY = 'aime_viewport_v1';
+-
+ @Component({
+   selector: 'app-matrix-grid',
+   standalone: true,
+@@ -11,6 +10,7 @@ const VIEWPORT_KEY = 'aime_viewport_v1';
+   templateUrl: './matrix-grid.html',
+   styleUrls: ['./matrix-grid.scss'],
+   changeDetection: ChangeDetectionStrategy.OnPush,
++  animations: [],
+   host: {
+     '[style.--matrix-cols]': 'cols()',
+     '[style.--pixel-size.px]': 'pixelSize()',
+@@ -18,12 +18,20 @@ const VIEWPORT_KEY = 'aime_viewport_v1';
+ })
+ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
+   private readonly patternService = inject(PatternManagerService);
++  private readonly viewportState = inject(ViewportStateService);
+   @ViewChild('canvasViewport') private canvasViewport?: ElementRef<HTMLElement>;
+   @ViewChild('gridContainer') gridContainer!: ElementRef<HTMLElement>;
++  @ViewChild('panoramicCanvas') panoramicCanvas?: ElementRef<HTMLCanvasElement>;
+   private isRestoring = true;
+-  private viewportSaveTimer: ReturnType<typeof setTimeout> | null = null;
++  private normalSaveTimer: ReturnType<typeof setTimeout> | null = null;
++  private panoramicSaveTimer: ReturnType<typeof setTimeout> | null = null;
++  private pixelSizeBeforePanoramic: number | null = null;
+   private readonly scrollHandler = () => {
+-    this.saveViewportDebounced();
++    if (this.showPanoramicView()) {
++      this.debouncedSave('panoramic');
++    } else {
++      this.debouncedSave('normal');
++    }
+   };
+ 
+   protected readonly matrix = this.patternService.pattern;
+@@ -40,6 +48,8 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
+   protected readonly animationStyle = this.patternService.animationStyle;
+   protected readonly activeStepIndex = this.patternService.activeStepIndex;
+   protected readonly optimalSequence = this.patternService.optimalSequence;
++  protected readonly showPanoramicView = this.patternService.showPanoramicView;
++  protected readonly isSimplifiedView = computed(() => this.showPanoramicView());
+   protected readonly pathStepMap = computed(() => {
+     const map = new Map<string, number>();
+     const sequence = this.optimalSequence();
+@@ -57,9 +67,64 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
+       if (!id) return;
+ 
+       Object.keys(localStorage)
+-        .filter((key) => key.startsWith(VIEWPORT_KEY + '_') && key !== `${VIEWPORT_KEY}_${id}`)
++        .filter((key) =>
++          (key.startsWith('aime_viewport_normal_v1_') ||
++            key.startsWith('aime_viewport_panoramic_v1_')) &&
++          !key.endsWith(`_${id}`)
++        )
+         .forEach((key) => localStorage.removeItem(key));
+     });
++
++    effect(() => {
++      const active = this.showPanoramicView();
++      if (active) {
++        this.saveCurrentViewport('normal');
++
++        const projectId = this.patternService.activeProjectId();
++        if (!projectId) return;
++
++        const saved = this.viewportState.load('panoramic', projectId);
++
++        if (this.pixelSizeBeforePanoramic === null) {
++          this.pixelSizeBeforePanoramic = untracked(() =>
++            this.patternService.pixelSize()
++          );
++        }
++
++        const pattern = this.patternService.pattern();
++        const container = this.gridContainer?.nativeElement;
++        if (!pattern.m.r || !pattern.m.c || !container) return;
++
++        if (saved) {
++          untracked(() => this.patternService.pixelSize.set(saved.pixelSize));
++          requestAnimationFrame(() => {
++            this.restoreViewport('panoramic');
++            this.renderPanoramicCanvas();
++          });
++        } else {
++          const PADDING = 80;
++          const fitByW = Math.floor((container.clientWidth - PADDING) / pattern.m.c);
++          const fitByH = Math.floor((container.clientHeight - PADDING) / pattern.m.r);
++          const fitSize = Math.max(2, Math.min(fitByW, fitByH));
++          untracked(() => this.patternService.pixelSize.set(fitSize));
++          requestAnimationFrame(() => {
++            this.centerGrid();
++            this.renderPanoramicCanvas();
++          });
++        }
++      } else if (this.pixelSizeBeforePanoramic !== null) {
++        const restoreSize = this.pixelSizeBeforePanoramic;
++        this.pixelSizeBeforePanoramic = null;
++        untracked(() => this.patternService.pixelSize.set(restoreSize));
++
++        requestAnimationFrame(() =>
++          requestAnimationFrame(() => {
++            this.isRestoring = false;
++            this.restoreViewport('normal');
++          })
++        );
++      }
++    });
+   }
+ 
+   ngAfterViewInit(): void {
+@@ -74,7 +139,8 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
+   }
+ 
+   ngOnDestroy(): void {
+-    if (this.viewportSaveTimer) clearTimeout(this.viewportSaveTimer);
++    if (this.normalSaveTimer) clearTimeout(this.normalSaveTimer);
++    if (this.panoramicSaveTimer) clearTimeout(this.panoramicSaveTimer);
+     const container = this.gridContainer?.nativeElement;
+     if (container) {
+       container.removeEventListener('scroll', this.scrollHandler);
+@@ -82,74 +148,107 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
+     window.removeEventListener('scroll', this.scrollHandler);
+   }
+ 
+-  private saveViewportDebounced(): void {
+-    if (this.viewportSaveTimer) clearTimeout(this.viewportSaveTimer);
+-    this.viewportSaveTimer = setTimeout(() => {
+-      this.saveViewport();
+-    }, 350);
+-  }
++  private debouncedSave(mode: 'normal' | 'panoramic'): void {
++    if (this.isRestoring) return;
+ 
+-  private saveViewport(): void {
+-    if (this.isRestoring) {
+-      return;
++    if (mode === 'normal') {
++      if (this.normalSaveTimer) clearTimeout(this.normalSaveTimer);
++      this.normalSaveTimer = setTimeout(() => this.saveCurrentViewport('normal'), 350);
++    } else {
++      if (this.panoramicSaveTimer) clearTimeout(this.panoramicSaveTimer);
++      this.panoramicSaveTimer = setTimeout(() => this.saveCurrentViewport('panoramic'), 350);
+     }
++  }
+ 
++  private saveCurrentViewport(mode: 'normal' | 'panoramic'): void {
+     const projectId = this.patternService.activeProjectId();
+     if (!projectId) return;
+     const container = this.gridContainer?.nativeElement;
+     if (!container) return;
+ 
+-    const state = {
++    this.viewportState.save(mode, {
+       scrollLeft: container.scrollLeft,
+       scrollTop: container.scrollTop,
+-      windowScrollX: window.scrollX,
+-      windowScrollY: window.scrollY,
+       pixelSize: this.patternService.pixelSize(),
+       projectId,
+-    };
+-
+-    localStorage.setItem(`${VIEWPORT_KEY}_${projectId}`, JSON.stringify(state));
++    });
+   }
+ 
+-  private restoreViewport(): void {
+-    const projectId = this.patternService.activeProjectId();
+-    if (!projectId) return;
++  private renderPanoramicCanvas(): void {
++    const canvas = this.panoramicCanvas?.nativeElement;
++    if (!canvas) return;
+ 
+-    const raw = localStorage.getItem(`${VIEWPORT_KEY}_${projectId}`);
+-    if (!raw) return;
++    const pattern = this.patternService.pattern();
++    const legend = pattern.l as Record<string, { b?: string; isBackground?: boolean }>;
++    const rows = pattern.m.r;
++    const cols = pattern.m.c;
++    if (!rows || !cols) return;
+ 
+-    try {
+-      const state = JSON.parse(raw) as {
+-        scrollLeft: number;
+-        scrollTop: number;
+-        windowScrollX?: number;
+-        windowScrollY?: number;
+-        pixelSize: number;
+-      };
++    const container = this.gridContainer?.nativeElement;
++    const PADDING = 48;
++    const availableW = (container?.clientWidth ?? window.innerWidth) - PADDING * 2;
++    const availableH = (container?.clientHeight ?? window.innerHeight) - PADDING * 2;
++
++    const cellSize = Math.max(
++      2,
++      Math.min(
++        Math.floor(availableW / cols),
++        Math.floor(availableH / rows)
++      )
++    );
++
++    const canvasW = cols * cellSize;
++    const canvasH = rows * cellSize;
++
++    canvas.width = canvasW;
++    canvas.height = canvasH;
++    canvas.style.width = `${canvasW}px`;
++    canvas.style.height = `${canvasH}px`;
++
++    const ctx = canvas.getContext('2d');
++    if (!ctx) return;
++    ctx.clearRect(0, 0, canvasW, canvasH);
++
++    for (let row = 0; row < rows; row++) {
++      for (let col = 0; col < cols; col++) {
++        const key = pattern.g[row]?.[col];
++        if (!key) continue;
++        const def = legend[key];
++        if (!def || def.isBackground) continue;
++
++        ctx.fillStyle = def.b ?? '#ccc';
++        ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
++      }
++    }
++  }
+ 
+-      const container = this.gridContainer?.nativeElement;
+-      if (!container) return;
++  private restoreViewport(mode: 'normal' | 'panoramic'): void {
++    const projectId = this.patternService.activeProjectId();
++    if (!projectId) return;
++    const container = this.gridContainer?.nativeElement;
++    if (!container) return;
+ 
+-      const savedPixelSize = state.pixelSize ?? this.patternService.pixelSize();
+-      const currentPixelSize = this.patternService.pixelSize();
+-      const ratio = currentPixelSize / savedPixelSize;
++    const saved = this.viewportState.load(mode, projectId);
++    if (!saved) {
++      if (mode === 'panoramic') this.centerGrid();
++      return;
++    }
+ 
+-      const targetLeft = Math.round(state.scrollLeft * ratio);
+-      const targetTop = Math.round(state.scrollTop * ratio);
++    const savedSize = saved.pixelSize ?? this.patternService.pixelSize();
++    const currentSize = this.patternService.pixelSize();
++    const ratio = currentSize / savedSize;
+ 
+-      container.scrollLeft = targetLeft;
+-      container.scrollTop = targetTop;
++    container.scrollLeft = Math.round(saved.scrollLeft * ratio);
++    container.scrollTop = Math.round(saved.scrollTop * ratio);
++  }
+ 
+-      if (state.windowScrollY || state.windowScrollX) {
+-        window.scrollTo({
+-          left: state.windowScrollX ?? 0,
+-          top: state.windowScrollY ?? 0,
+-          behavior: 'auto',
+-        });
+-      }
+-    } catch {
+-      // ignore corrupt state
+-    }
++  private centerGrid(): void {
++    const container = this.gridContainer?.nativeElement;
++    if (!container) return;
++    container.scrollLeft = Math.max(0,
++      (container.scrollWidth - container.clientWidth) / 2);
++    container.scrollTop = Math.max(0,
++      (container.scrollHeight - container.clientHeight) / 2);
+   }
+ 
+   private waitAndRestore(attempts: number): void {
+@@ -195,7 +294,7 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
+ 
+     requestAnimationFrame(() => {
+       requestAnimationFrame(() => {
+-        this.restoreViewport();
++        this.restoreViewport('normal');
+         this.isRestoring = false;
+       });
+     });
+@@ -223,9 +322,11 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
+     if (hiddenSymbols.has(cell)) {
+       return {
+         'background-color': def.b,
+-        'opacity': '0',
+-        'visibility': 'hidden',
+-        'pointer-events': 'none',
++        'color': 'transparent',
++        'opacity': '1',
++        'filter': 'none',
++        'background-image': 'none',
++        'border-color': 'transparent',
+       };
+     }
+ 
+@@ -258,11 +359,17 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
+     return this.progress()[`${row},${col}`] ?? 0;
+   }
+ 
++  protected isBackgroundCell(cell: string): boolean {
++    const def = this.patternService.pattern().l[cell] as any;
++    return !def || !!def.isBackground;
++  }
++
+   protected getSymbol(cell: string, row: number, col: number): string {
+     const p = this.matrix();
+     const def = p.l[cell] as any;
+     if (!def || def.isBackground) return '';
+     if (this.patternService.hiddenSymbols().has(cell)) return '';
++    if (this.isSimplifiedView()) return '';
+     const step = this.progress()[`${row},${col}`] ?? 0;
+     if (step === 1) return '';
+     return def.s ?? '';
+diff --git a/src/app/components/project-controls/project-controls.html b/src/app/components/project-controls/project-controls.html
+index 68738b1..14164d9 100644
+--- a/src/app/components/project-controls/project-controls.html
++++ b/src/app/components/project-controls/project-controls.html
+@@ -2,6 +2,7 @@
+ 
+ @if (celebrationMessage()) {
+   <div class="color-celebration"
++       @celebration
+        [style.background]="celebrationColor()"
+        [style.color]="getContrastColor(celebrationColor())"
+        role="status"
+@@ -11,47 +12,53 @@
+ }
+ 
+ <div class="floating-container">
+-  <div class="fab-wrapper">
+-
+-    <div class="fab-tooltip">
+-      @if (overallProgress(); as data) {
+-        {{ data.done }} de {{ data.total }} puntadas · {{ data.overallPercent }}%
+-      } @else {
+-        Sin proyecto cargado
+-      }
+-    </div>
+-
+-    <button class="fab" (click)="isOpen.set(!isOpen())" [class.is-open]="isOpen()">
+-      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+-        <circle cx="32" cy="32" r="26"
++  <button class="fab" (click)="isOpen.set(!isOpen())" [class.is-open]="isOpen()">
++    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
++         style="position:absolute;inset:0;width:100%;height:100%">
++      <defs>
++        <linearGradient id="fab-arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
++          <stop offset="0%" stop-color="#a78bfa"/>
++          <stop offset="100%" stop-color="#f9a8d4"/>
++        </linearGradient>
++      </defs>
++      <circle cx="32" cy="32" r="28"
++        fill="none"
++        stroke="rgba(255,255,255,0.08)"
++        stroke-width="3"/>
++      @if (stats(); as data) {
++        <circle cx="32" cy="32" r="28"
+           fill="none"
+-          stroke="rgba(255,255,255,0.2)"
+-          stroke-width="4"/>
+-        @if (overallProgress(); as data) {
+-          <circle cx="32" cy="32" r="26"
+-            fill="none"
+-            stroke="white"
+-            stroke-width="4"
+-            stroke-linecap="round"
+-            [attr.stroke-dasharray]="circumference"
+-            [attr.stroke-dashoffset]="getOffset(data.overallPercent)"
+-            transform="rotate(-90 32 32)"
+-            style="transition: stroke-dashoffset 0.5s cubic-bezier(.4,0,.2,1);"/>
+-        }
+-      </svg>
+-
+-      @if (overallProgress(); as data) {
+-        <span class="fab-percent">
+-          {{ isOpen() ? '✕' : data.overallPercent + '%' }}
+-        </span>
+-      } @else {
+-        <span class="fab-empty">{{ isOpen() ? '✕' : '–' }}</span>
++          stroke="url(#fab-arc-grad)"
++          stroke-width="3"
++          stroke-linecap="round"
++          [attr.stroke-dasharray]="circumference"
++          [attr.stroke-dashoffset]="getOffset(data.overallPercent)"
++          transform="rotate(-90 32 32)"
++          style="transition: stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)"/>
+       }
+-    </button>
++      <!-- diamond facets -->
++      <polygon points="32,10 50,24 50,40 32,54 14,40 14,24" fill="#2d2050" stroke="#c084fc" stroke-width="1.2"/>
++      <polygon points="32,10 50,24 32,28 14,24" fill="#7c3aed" opacity=".85"/>
++      <polygon points="32,28 50,24 50,40 32,54" fill="#4f46e5" opacity=".7"/>
++      <polygon points="32,28 14,24 14,40 32,54" fill="#6d28d9" opacity=".75"/>
++      <polygon points="32,10 41,24 32,28 23,24" fill="#a855f7" opacity=".95"/>
++      <line x1="32" y1="10" x2="32" y2="28" stroke="#e9d5ff" stroke-width=".8" opacity=".5"/>
++      <line x1="14" y1="24" x2="50" y2="24" stroke="#e9d5ff" stroke-width=".8" opacity=".35"/>
++      <!-- sparkle -->
++      <polygon points="30,16 31,19 32,16 33,19 34,16" fill="#f9a8d4" opacity=".9">
++        <animate attributeName="opacity" values=".9;.2;.9" dur="1.8s" repeatCount="indefinite"/>
++      </polygon>
++    </svg>
+ 
+-  </div>
++    @if (isOpen()) {
++      <span class="fab-close">✕</span>
++    } @else if (stats(); as data) {
++      <span class="fab-percent">{{ data.overallPercent }}%</span>
++    }
++  </button>
+ 
+-  <div class="panel" *ngIf="isOpen()">
++  @if (isOpen()) {
++  <div class="panel" @panel>
+     <div class="tabs">
+       <button [class.active]="activeTab() === 'project'"    (click)="activeTab.set('project')">📁 Proyecto</button>
+       <button [class.active]="activeTab() === 'statistics'" (click)="activeTab.set('statistics')">📊 Stats</button>
+@@ -60,7 +67,7 @@
+     </div>
+ 
+     <!-- PROJECT -->
+-    <div class="tab-content" *ngIf="activeTab() === 'project'">
++    <div class="tab-content" *ngIf="activeTab() === 'project'" @tabContent>
+       <div class="field">
+         <label>Proyecto activo</label>
+         <select [ngModel]="activeId()" (ngModelChange)="onSelect($event)">
+@@ -107,6 +114,17 @@
+         </div>
+       </div>
+ 
++      @if (stats(); as data) {
++        @if (data.overallPercent < 100) {
++          <hr />
++          <button class="btn-complete" (click)="confirmMarkComplete()">
++            ¡Marcar como terminado! 🎉
++          </button>
++        } @else {
++          <div class="complete-badge">✦ Proyecto completado ✦</div>
++        }
++      }
++
+       <hr />
+       <button class="text-btn" (click)="editorOpen.set(true)">🎨 Editor de colores</button>
+ 
+@@ -116,7 +134,7 @@
+     </div>
+ 
+     <!-- STATISTICS -->
+-    <div class="tab-content" *ngIf="activeTab() === 'statistics'">
++    <div class="tab-content" *ngIf="activeTab() === 'statistics'" @tabContent>
+       <div class="stats-container">
+         @if (stats(); as data) {
+           <div class="overall-progress">
+@@ -134,8 +152,8 @@
+ 
+           <label class="stats-label">Progreso por Color</label>
+           <div class="stats-list">
+-            @for (s of data.symbols; track s.key) {
+-              <div class="stats-row">
++            @for (s of data.symbols; track s.key; let i = $index) {
++              <div class="stats-row" [style.--row-index]="i">
+                 <div class="swatch" [style.background]="s.color">
+                   {{ s.char }}
+                 </div>
+@@ -158,7 +176,7 @@
+     </div>
+ 
+     <!-- CONFIG -->
+-    <div class="tab-content config-tab" *ngIf="activeTab() === 'config'">
++    <div class="tab-content config-tab" *ngIf="activeTab() === 'config'" @tabContent>
+       <div class="config-sidebar">
+         <div class="config-header">
+           <h3>Configuración</h3>
+@@ -173,6 +191,16 @@
+             </div>
+           </div>
+ 
++          <div class="setting-group">
++            <label>Atajos de teclado</label>
++            <div class="storage-switch">
++              <button [class.active]="manager.showHotkeys()"
++                      (click)="manager.showHotkeys.set(true)">Visibles</button>
++              <button [class.active]="!manager.showHotkeys()"
++                      (click)="manager.showHotkeys.set(false)">Ocultos</button>
++            </div>
++          </div>
++
+           <nav class="config-nav">
+             <button [class.active]="activeConfigTab() === 'view'" (click)="setConfigTab('view')">Visual</button>
+             <button [class.active]="activeConfigTab() === 'symbols'" (click)="setConfigTab('symbols')">Símbolos</button>
+@@ -246,7 +274,7 @@
+     </div>
+ 
+     <!-- AIME -->
+-    <div class="tab-content aime-tab" *ngIf="activeTab() === 'aime'">
++    <div class="tab-content aime-tab" *ngIf="activeTab() === 'aime'" @tabContent>
+       <div class="letter-scene" [class.is-open]="letterOpen()">
+         <div class="envelope" (click)="!letterOpen() && letterOpen.set(true)">
+           <div class="envelope-flap"></div>
+@@ -272,4 +300,5 @@
+     </div>
+ 
+   </div>
++  }
+ </div>
+\ No newline at end of file
+diff --git a/src/app/components/project-controls/project-controls.scss b/src/app/components/project-controls/project-controls.scss
+index e1414ad..865b224 100644
+--- a/src/app/components/project-controls/project-controls.scss
++++ b/src/app/components/project-controls/project-controls.scss
+@@ -25,14 +25,6 @@
+   z-index: 10000;
+   white-space: nowrap;
+   pointer-events: none;
+-  animation: celebration-in-out 4s ease forwards;
+-}
+-
+-@keyframes celebration-in-out {
+-  0%   { opacity: 0; transform: translateX(-50%) translateY(10px); }
+-  10%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+-  80%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+-  100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+ }
+ 
+ // ── Floating button ───────────────────────────────────
+@@ -51,106 +43,71 @@
+   width: 64px;
+   height: 64px;
+   border-radius: 50%;
+-  background: #e91e8c;
++  background: radial-gradient(circle at 40% 35%, #2d2050 0%, #1a1626 70%);
+   border: none;
+   cursor: pointer;
++  position: relative;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+-  position: relative;
+-  box-shadow: 0 4px 14px rgba(233, 30, 140, 0.35);
+-  transition: transform 0.15s ease;
++  box-shadow:
++    0 0 16px 3px rgba(192, 132, 252, .35),
++    0 4px 20px rgba(0, 0, 0, .5);
++  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
++              box-shadow 0.25s ease;
++  z-index: 1001;
++  overflow: hidden;
+ 
+-  &:hover { transform: scale(1.07); }
++  &:hover {
++    transform: scale(1.1);
++    box-shadow:
++      0 0 24px 6px rgba(192, 132, 252, .5),
++      0 6px 28px rgba(0, 0, 0, .5);
++  }
+ 
+-  svg {
+-    position: absolute;
+-    top: 0;
+-    left: 0;
+-    pointer-events: none;
++  &.is-open {
++    box-shadow:
++      0 0 16px 3px rgba(249, 168, 212, .35),
++      0 4px 20px rgba(0, 0, 0, .5);
+   }
+ }
+ 
+ .fab-percent {
+-  font-size: 13px;
+-  font-weight: 500;
+-  color: white;
+-  z-index: 1;
+-  letter-spacing: -0.3px;
+-  pointer-events: none;
+-}
+-
+-.fab-empty {
+-  font-size: 18px;
+-  color: rgba(255, 255, 255, 0.5);
+-  z-index: 1;
+-  pointer-events: none;
+-}
+-
+-.fab-tooltip {
+-  position: absolute;
+-  bottom: 74px;
+-  left: 50%;
+-  transform: translateX(-50%);
+-  background: white;
+-  border: 0.5px solid #ccc;
+-  border-radius: 8px;
+-  padding: 7px 12px;
+   font-size: 12px;
+-  color: #333;
+-  white-space: nowrap;
++  font-weight: 700;
++  color: #e2d9f3;
++  z-index: 2;
++  letter-spacing: -.5px;
++  text-shadow: 0 1px 4px rgba(0, 0, 0, .8);
+   pointer-events: none;
+-  opacity: 0;
+-  transition: opacity 0.18s ease;
+-  z-index: 100;
+-
+-  &::after {
+-    content: '';
+-    position: absolute;
+-    bottom: -5px;
+-    left: 50%;
+-    transform: translateX(-50%) rotate(45deg);
+-    width: 8px;
+-    height: 8px;
+-    background: white;
+-    border-right: 0.5px solid #ccc;
+-    border-bottom: 0.5px solid #ccc;
+-  }
+ }
+ 
+-.fab-wrapper {
+-  position: relative;
+-  width: 64px;
+-  height: 64px;
+-
+-  &:hover .fab-tooltip {
+-    opacity: 1;
+-  }
++.fab-close {
++  font-size: 14px;
++  font-weight: 500;
++  color: #e2d9f3;
++  z-index: 2;
++  pointer-events: none;
+ }
+ 
+ // ── Panel ─────────────────────────────────────────────
+ .panel {
+   width: 400px;
+   max-height: 400px;
+-  background: #1e1e2e;
+-  color: #cdd6f4;
++  background: #1a1626;
++  color: #e2d9f3;
+   border-radius: 16px;
+   overflow: hidden;
+   box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+   display: flex;
+   flex-direction: column;
+-  animation: panel-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+-
+-  @keyframes panel-in {
+-    from { opacity: 0; transform: scale(0.85) translateY(-10px); }
+-    to   { opacity: 1; transform: scale(1) translateY(0); }
+-  }
++  position: relative;
+ }
+ 
+ // ── Tabs ──────────────────────────────────────────────
+ .tabs {
+   display: flex;
+-  border-bottom: 1px solid #313244;
++  border-bottom: 1px solid #2d2640;
+   flex-shrink: 0;
+ 
+   button {
+@@ -159,7 +116,7 @@
+     background: transparent;
+     border: none;
+     border-bottom: 2px solid transparent;
+-    color: #6c7086;
++    color: #6e6a86;
+     font-family: 'Roboto', sans-serif;
+     font-size: 13px;
+     font-weight: 500;
+@@ -167,14 +124,14 @@
+     transition: all 0.2s;
+ 
+     &.active {
+-      color: #cdd6f4;
+-      background: #252535;
+-      border-bottom-color: #89b4fa;
++      color: #e2d9f3;
++      background: #221d30;
++      border-bottom-color: #c084fc;
+     }
+ 
+     &:hover:not(.active) {
+-      background: #252535;
+-      color: #bac2de;
++      background: #221d30;
++      color: #b8b0d4;
+     }
+   }
+ }
+@@ -200,19 +157,19 @@
+     font-weight: 500;
+     text-transform: uppercase;
+     letter-spacing: 0.08em;
+-    color: #6c7086;
++    color: #6e6a86;
+   }
+ 
+   select, input[type="text"] {
+-    background: #313244;
+-    border: 1px solid #45475a;
++    background: #2d2640;
++    border: 1px solid #3d3554;
+     border-radius: 8px;
+-    color: #cdd6f4;
++    color: #e2d9f3;
+     padding: 8px 10px;
+     font-family: 'Roboto', sans-serif;
+     font-size: 14px;
+     outline: none;
+-    &:focus { border-color: #89b4fa; }
++    &:focus { border-color: #c084fc; }
+   }
+ }
+ 
+@@ -224,19 +181,19 @@
+ .text-btn {
+   flex: 1;
+   padding: 8px;
+-  background: #313244;
+-  border: 1px solid #45475a;
++  background: #2d2640;
++  border: 1px solid #3d3554;
+   border-radius: 8px;
+-  color: #cdd6f4;
++  color: #e2d9f3;
+   font-family: 'Roboto', sans-serif;
+   font-size: 13px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: background 0.15s;
+ 
+-  &:hover  { background: #45475a; }
+-  &.danger { color: #f38ba8; &:hover { background: #3d2030; } }
+-  &.confirm { color: #a6e3a1; &:hover { background: #1e3a2f; } }
++  &:hover  { background: #3d3554; }
++  &.danger { color: #f9a8d4; &:hover { background: #3d2030; } }
++  &.confirm { color: #6ee7b7; &:hover { background: #1e3a2f; } }
+ }
+ 
+ .trash-hint {
+@@ -244,7 +201,7 @@
+   flex-direction: column;
+   gap: 6px;
+   font-size: 12px;
+-  color: #bac2de;
++  color: #b8b0d4;
+ 
+   span {
+     display: flex;
+@@ -263,16 +220,16 @@
+ .upload-btn {
+   flex: 1;
+   padding: 10px;
+-  background: #89b4fa18;
+-  border: 1px dashed #89b4fa;
++  background: #c084fc18;
++  border: 1px dashed #c084fc;
+   border-radius: 8px;
+-  color: #89b4fa;
++  color: #c084fc;
+   font-family: 'Roboto', sans-serif;
+   font-size: 13px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: background 0.15s;
+-  &:hover { background: #89b4fa30; }
++  &:hover { background: #c084fc30; }
+ }
+ 
+ .btn-export {
+@@ -294,6 +251,40 @@
+   }
+ }
+ 
++.btn-complete {
++  width: 100%;
++  padding: 10px;
++  background: linear-gradient(135deg, #a78bfa, #f9a8d4);
++  border: none;
++  border-radius: 10px;
++  color: #1a1626;
++  font-family: 'Roboto', sans-serif;
++  font-size: 13px;
++  font-weight: 700;
++  cursor: pointer;
++  letter-spacing: 0.04em;
++  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
++
++  &:hover {
++    transform: scale(1.03);
++    box-shadow: 0 4px 20px rgba(167, 139, 250, 0.5);
++  }
++
++  &:active { transform: scale(0.98); }
++}
++
++.complete-badge {
++  text-align: center;
++  padding: 10px;
++  font-size: 12px;
++  font-weight: 600;
++  letter-spacing: 0.1em;
++  background: linear-gradient(135deg, #a78bfa, #f9a8d4);
++  -webkit-background-clip: text;
++  -webkit-text-fill-color: transparent;
++  background-clip: text;
++}
++
+ .config-tab {
+   padding: 0;
+   overflow: hidden;
+@@ -302,7 +293,7 @@
+     margin: 0;
+     font-size: 16px;
+     font-weight: 600;
+-    color: #cdd6f4;
++    color: #e2d9f3;
+   }
+ }
+ 
+@@ -310,8 +301,8 @@
+   width: 100%;
+   height: 100vh;
+   min-height: 300px;
+-  background: #1e1e2e;
+-  border: 1px solid #313244;
++  background: #1a1626;
++  border: 1px solid #2d2640;
+   border-radius: 10px;
+   display: flex;
+   flex-direction: column;
+@@ -320,7 +311,7 @@
+ 
+ .config-header {
+   padding: 12px;
+-  border-bottom: 1px solid #313244;
++  border-bottom: 1px solid #2d2640;
+ }
+ 
+ .config-content {
+@@ -336,21 +327,21 @@
+ 
+   label {
+     font-size: 12px;
+-    color: #bac2de;
++    color: #b8b0d4;
+   }
+ 
+   select {
+-    background: #313244;
+-    border: 1px solid #45475a;
++    background: #2d2640;
++    border: 1px solid #3d3554;
+     border-radius: 8px;
+-    color: #cdd6f4;
++    color: #e2d9f3;
+     padding: 8px 10px;
+     font-family: 'Roboto', sans-serif;
+     font-size: 13px;
+     outline: none;
+ 
+     &:focus {
+-      border-color: #89b4fa;
++      border-color: #c084fc;
+     }
+   }
+ }
+@@ -437,7 +428,7 @@
+ }
+ 
+ .pro-switch input:checked + .pro-slider {
+-  background-color: #3498db;
++  background-color: #818cf8;
+ }
+ 
+ .pro-switch input:checked + .pro-slider::before {
+@@ -481,7 +472,7 @@
+ .select-wrapper select {
+   width: 100%;
+   background: #111;
+-  color: #3498db;
++  color: #818cf8;
+   border: 1px solid #444;
+   padding: 6px;
+   font-size: 0.8rem;
+@@ -506,15 +497,15 @@
+     display: inline-block;
+     margin-bottom: 8px;
+     font-size: 12px;
+-    color: #bac2de;
++    color: #b8b0d4;
+   }
+ }
+ 
+ .storage-switch {
+   display: flex;
+   gap: 4px;
+-  background: #252535;
+-  border: 1px solid #313244;
++  background: #221d30;
++  border: 1px solid #2d2640;
+   border-radius: 8px;
+   padding: 4px;
+ 
+@@ -523,7 +514,7 @@
+     border: none;
+     border-radius: 6px;
+     background: transparent;
+-    color: #bac2de;
++    color: #b8b0d4;
+     font-family: 'Roboto', sans-serif;
+     font-size: 12px;
+     font-weight: 500;
+@@ -531,37 +522,47 @@
+     cursor: pointer;
+ 
+     &.active {
+-      background: #313244;
+-      color: #cdd6f4;
++      background: #2d2640;
++      color: #e2d9f3;
+     }
+   }
+ }
+ 
+ .config-nav {
+   display: flex;
+-  gap: 8px;
+-  margin-bottom: 12px;
++  border-bottom: 1px solid #2d2640;
++  margin-bottom: 14px;
++  gap: 0;
+ 
+   button {
+     flex: 1;
+-    border: 1px solid #45475a;
+-    border-radius: 8px;
+-    background: #252535;
+-    color: #bac2de;
+-    padding: 8px;
++    padding: 9px 8px;
++    background: transparent;
++    border: none;
++    border-bottom: 2px solid transparent;
++    color: #6e6a86;
++    font-family: 'Roboto', sans-serif;
++    font-size: 12px;
++    font-weight: 500;
+     cursor: pointer;
++    transition: all 0.2s;
++    letter-spacing: 0.02em;
+ 
+     &.active {
+-      background: #313244;
+-      color: #cdd6f4;
+-      border-color: #89b4fa;
++      color: #e2d9f3;
++      border-bottom-color: #c084fc;
++    }
++
++    &:hover:not(.active) {
++      color: #b8b0d4;
++      background: #221d30;
+     }
+   }
+ }
+ 
+ .modern-slider {
+   width: 100%;
+-  accent-color: #89b4fa;
++  accent-color: #c084fc;
+   height: 8px;
+   border-radius: 5px;
+ }
+@@ -574,11 +575,11 @@
+   button {
+     height: 40px;
+     border-radius: 6px;
+-    border: 1px solid #45475a;
++    border: 1px solid #3d3554;
+     cursor: pointer;
+ 
+     &.active {
+-      outline: 3px solid #89b4fa;
++      outline: 3px solid #c084fc;
+     }
+   }
+ }
+@@ -591,9 +592,9 @@
+   max-height: none !important;
+   overflow: visible !important;
+   width: 100%;
+-  border: 1px solid #45475a;
++  border: 1px solid #3d3554;
+   border-radius: 8px;
+-  background: #252535;
++  background: #221d30;
+ }
+ 
+ .symbol-row {
+@@ -602,8 +603,8 @@
+   align-items: center;
+   gap: 12px;
+   padding: 0 10px;
+-  border-bottom: 1px solid #313244;
+-  color: #cdd6f4;
++  border-bottom: 1px solid #2d2640;
++  color: #e2d9f3;
+ 
+   .color-swatch {
+     width: 14px;
+@@ -615,7 +616,7 @@
+ 
+ hr {
+   border: none;
+-  border-top: 1px solid #313244;
++  border-top: 1px solid #2d2640;
+   flex-shrink: 0;
+ }
+ 
+@@ -629,8 +630,8 @@ hr {
+ }
+ 
+ .overall-progress {
+-  background: #252535;
+-  border: 1px solid #313244;
++  background: #221d30;
++  border: 1px solid #2d2640;
+   border-radius: 10px;
+   padding: 12px;
+   display: flex;
+@@ -638,7 +639,7 @@ hr {
+   gap: 8px;
+ 
+   small {
+-    color: #bac2de;
++    color: #b8b0d4;
+     font-size: 12px;
+   }
+ }
+@@ -647,31 +648,31 @@ hr {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+-  color: #cdd6f4;
++  color: #e2d9f3;
+   font-size: 13px;
+ 
+   strong {
+     font-size: 16px;
+-    color: #a6e3a1;
++    color: #6ee7b7;
+   }
+ }
+ 
+ .progress-track {
+   height: 12px;
+-  background: #313244;
++  background: #2d2640;
+   border-radius: 6px;
+   overflow: hidden;
+ }
+ 
+ .progress-fill {
+   height: 100%;
+-  background: linear-gradient(90deg, #89b4fa, #a6e3a1);
++  background: linear-gradient(90deg, #c084fc, #6ee7b7);
+   transition: width 0.3s ease-out;
+ }
+ 
+ .stats-label {
+   font-size: 12px;
+-  color: #bac2de;
++  color: #b8b0d4;
+   font-weight: 500;
+ }
+ 
+@@ -683,9 +684,9 @@ hr {
+   max-height: none !important;
+   overflow: visible !important;
+   padding-bottom: 20px;
+-  border: 1px solid #313244;
++  border: 1px solid #2d2640;
+   border-radius: 8px;
+-  background: #252535;
++  background: #221d30;
+ }
+ 
+ .config-sidebar::-webkit-scrollbar {
+@@ -703,7 +704,14 @@ hr {
+   align-items: center;
+   gap: 12px;
+   padding: 0 10px;
+-  border-bottom: 1px solid #313244;
++  border-bottom: 1px solid #2d2640;
++  animation: stats-row-in 200ms cubic-bezier(0.4, 0, 0.2, 1) both;
++  animation-delay: calc(var(--row-index, 0) * 40ms + 100ms);
++}
++
++@keyframes stats-row-in {
++  from { opacity: 0; transform: translateX(-10px); }
++  to   { opacity: 1; transform: translateX(0); }
+ }
+ 
+ .swatch {
+@@ -726,12 +734,12 @@ hr {
+   justify-content: space-between;
+   font-size: 13px;
+   margin-bottom: 4px;
+-  color: #cdd6f4;
++  color: #e2d9f3;
+ }
+ 
+ .mini-track {
+   height: 4px;
+-  background: #313244;
++  background: #2d2640;
+   border-radius: 2px;
+   overflow: hidden;
+ }
+@@ -742,9 +750,9 @@ hr {
+ }
+ 
+ .empty-state {
+-  border: 1px dashed #45475a;
++  border: 1px dashed #3d3554;
+   border-radius: 10px;
+-  color: #bac2de;
++  color: #b8b0d4;
+   padding: 20px;
+   text-align: center;
+   font-size: 13px;
+@@ -752,7 +760,7 @@ hr {
+ 
+ // ── Aime / Love letter tab ────────────────────────────
+ .aime-tab {
+-  background: linear-gradient(160deg, #1a1028 0%, #2a1040 50%, #1a1028 100%);
++  background: linear-gradient(160deg, #120d1e 0%, #1e1433 50%, #120d1e 100%);
+   min-height: 320px;
+   display: flex;
+   align-items: center;
+@@ -768,7 +776,7 @@ hr {
+     left: 0; right: 0;
+     text-align: center;
+     font-size: 10px;
+-    color: rgba(203,166,247,0.25);
++    color: rgba(167, 139, 250, 0.25);
+     letter-spacing: 4px;
+   }
+ 
+@@ -779,7 +787,7 @@ hr {
+     left: 0; right: 0;
+     text-align: center;
+     font-size: 10px;
+-    color: rgba(203,166,247,0.25);
++    color: rgba(167, 139, 250, 0.25);
+     letter-spacing: 4px;
+   }
+ }
+@@ -843,7 +851,7 @@ hr {
+   bottom: -16px;
+   left: 50%;
+   transform: translateX(-50%);
+-  background: linear-gradient(135deg, #cba6f7, #89b4fa);
++  background: linear-gradient(135deg, #a78bfa, #818cf8);
+   border: none;
+   border-radius: 20px;
+   color: white;
+@@ -853,13 +861,13 @@ hr {
+   padding: 6px 20px;
+   cursor: pointer;
+   letter-spacing: 0.05em;
+-  box-shadow: 0 4px 14px rgba(203,166,247,0.4);
++  box-shadow: 0 4px 14px rgba(167, 139, 250, 0.4);
+   transition: all 0.2s;
+   z-index: 10;
+ 
+   &:hover {
+     transform: translateX(-50%) scale(1.05);
+-    box-shadow: 0 6px 20px rgba(203,166,247,0.6);
++    box-shadow: 0 6px 20px rgba(167, 139, 250, 0.6);
+   }
+ }
+ 
+diff --git a/src/app/components/project-controls/project-controls.ts b/src/app/components/project-controls/project-controls.ts
+index c7d40cc..f3385bd 100644
+--- a/src/app/components/project-controls/project-controls.ts
++++ b/src/app/components/project-controls/project-controls.ts
+@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
+ import { PathAnimationStyle, PatternManagerService } from '../../services/pattern-manager';
+ import { ProjectIngestorService } from '../../services/project-ingestor.service';
+ import { ColorEditorComponent } from '../color-editor/color-editor';
++import { panelAnimation, tabContentAnimation, celebrationAnimation, statsListAnimation } from '../../animations';
+ 
+ type Tab = 'project' | 'statistics' | 'config' | 'aime';
+ 
+@@ -15,10 +16,11 @@ type Tab = 'project' | 'statistics' | 'config' | 'aime';
+   standalone: true,
+   imports: [CommonModule, FormsModule, ColorEditorComponent],
+   templateUrl: './project-controls.html',
+-  styleUrls: ['./project-controls.scss']
++  styleUrls: ['./project-controls.scss'],
++  animations: [panelAnimation, tabContentAnimation, celebrationAnimation, statsListAnimation]
+ })
+ export class ProjectControlsComponent implements OnDestroy {
+-  private manager = inject(PatternManagerService);
++  readonly manager = inject(PatternManagerService);
+   private ingestor = inject(ProjectIngestorService);
+ 
+   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+@@ -38,7 +40,7 @@ export class ProjectControlsComponent implements OnDestroy {
+   showOptimalPath = this.manager.showOptimalPath;
+   animationStyle = this.manager.animationStyle;
+   currentSectorStats = this.manager.currentSectorStats;
+-  readonly circumference = 2 * Math.PI * 26;
++  readonly circumference = 2 * Math.PI * 28;
+ 
+   isOpen = signal<boolean>(false);
+   activeTab = signal<Tab>('project');
+@@ -56,7 +58,46 @@ export class ProjectControlsComponent implements OnDestroy {
+   private confettiActive = false;
+   private confettiFrame: number | null = null;
+   private keyHandler = (e: KeyboardEvent) => {
+-    if (e.key === 'Escape') this.isOpen.update(v => !v);
++    const tag = (e.target as HTMLElement | null)?.tagName?.toLowerCase();
++    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
++
++    switch (e.key) {
++      case 'Escape':
++        if (this.manager.showPanoramicView()) {
++          this.manager.showPanoramicView.set(false);
++        } else {
++          this.isOpen.update(v => !v);
++        }
++        break;
++      case 'p':
++      case 'P':
++        this.manager.showPanoramicView.update(v => !v);
++        break;
++      case 's':
++      case 'S':
++        this.isOpen.set(true);
++        this.activeTab.set('statistics');
++        break;
++      case 'c':
++      case 'C':
++        this.isOpen.set(true);
++        this.activeTab.set('config');
++        break;
++      case ' ':
++        e.preventDefault();
++        this.manager.toggleOptimalPath();
++        break;
++      case '+':
++      case '=':
++        this.manager.setPixelSize(this.manager.pixelSize() + 2);
++        break;
++      case '-':
++        this.manager.setPixelSize(this.manager.pixelSize() - 2);
++        break;
++      case '?':
++        this.manager.showHotkeys.update(v => !v);
++        break;
++    }
+   };
+   private completeHandler = () => this.launchConfetti();
+   private colorCompleteHandler = (e: Event) => {
+@@ -200,6 +241,11 @@ export class ProjectControlsComponent implements OnDestroy {
+     this.manager.exportProject();
+   }
+ 
++  confirmMarkComplete(): void {
++    if (!confirm('¿Marcar todo el proyecto como terminado? Puedes deshacer esto desde el editor de colores.')) return;
++    this.manager.markProjectComplete();
++  }
++
+   async onFcjsonSelected(event: any) {
+     const file = event.target.files?.[0] as File | undefined;
+     if (!file) return;
+diff --git a/src/app/services/pattern-manager.ts b/src/app/services/pattern-manager.ts
+index 5acb0e1..281f7c3 100644
+--- a/src/app/services/pattern-manager.ts
++++ b/src/app/services/pattern-manager.ts
+@@ -1,6 +1,7 @@
+ import { Injectable, signal, inject, effect, OnDestroy, computed } from '@angular/core';
+ import { PatternMatrix, ColorConfiguration, SymbolDefinition } from '../models/pattern-matrix.model';
+ import { CloudPatternRepository } from '../repositories/cloud-pattern.repository';
++import { SnapshotService } from './snapshot.service';
+ 
+ export type HighlightStyle = {
+   name: string;
+@@ -82,6 +83,7 @@ export type PatternDashboardStats = {
+ @Injectable({ providedIn: 'root' })
+ export class PatternManagerService implements OnDestroy {
+   private readonly repository = inject(CloudPatternRepository);
++  private readonly snapshots = inject(SnapshotService);
+   private inProgressKey = signal<string | null>(
+     localStorage.getItem(ACTIVE_SECTOR_KEY) ?? localStorage.getItem(LEGACY_ACTIVE_SECTOR_KEY)
+   );
+@@ -114,6 +116,10 @@ export class PatternManagerService implements OnDestroy {
+   readonly showOptimalPath = signal<boolean>(
+     localStorage.getItem('show_path') === 'true'
+   );
++  readonly showPanoramicView = signal(false);
++  readonly showHotkeys = signal<boolean>(
++    localStorage.getItem('show_hotkeys') !== 'false'
++  );
+   readonly highlightedCells = signal<Set<string>>(new Set());
+   readonly animationStyle = signal<PathAnimationStyle>(
+     (localStorage.getItem('anim_style') as PathAnimationStyle) || 'numbers'
+@@ -285,12 +291,14 @@ export class PatternManagerService implements OnDestroy {
+         hiddenSymbols: Array.from(this.hiddenSymbols()),
+         showOptimalPath: this.showOptimalPath(),
+         animationStyle: this.animationStyle(),
++        showHotkeys: this.showHotkeys(),
+       };
+ 
+       localStorage.setItem('bordados_settings', JSON.stringify(settings));
+       localStorage.setItem('storageMode', settings.storageMode);
+       localStorage.setItem('show_path', String(settings.showOptimalPath));
+       localStorage.setItem('anim_style', settings.animationStyle);
++      localStorage.setItem('show_hotkeys', String(settings.showHotkeys));
+ 
+       if (this.storageMode() === 'cloud') {
+         if (this.settingsTimer) clearTimeout(this.settingsTimer);
+@@ -475,6 +483,7 @@ export class PatternManagerService implements OnDestroy {
+         hiddenSymbols?: string[];
+         showOptimalPath?: boolean;
+         animationStyle?: PathAnimationStyle;
++        showHotkeys?: boolean;
+       };
+ 
+       if (typeof parsed.pixelSize === 'number') {
+@@ -501,6 +510,10 @@ export class PatternManagerService implements OnDestroy {
+         this.animationStyle.set(parsed.animationStyle);
+       }
+ 
++      if (typeof parsed.showHotkeys === 'boolean') {
++        this.showHotkeys.set(parsed.showHotkeys);
++      }
++
+       const showPathRaw = localStorage.getItem('show_path');
+       if (showPathRaw === 'true' || showPathRaw === 'false') {
+         this.showOptimalPath.set(showPathRaw === 'true');
+@@ -510,6 +523,11 @@ export class PatternManagerService implements OnDestroy {
+       if (savedAnimStyle === 'ghost' || savedAnimStyle === 'numbers') {
+         this.animationStyle.set(savedAnimStyle);
+       }
++
++      const savedHotkeys = localStorage.getItem('show_hotkeys');
++      if (savedHotkeys === 'true' || savedHotkeys === 'false') {
++        this.showHotkeys.set(savedHotkeys === 'true');
++      }
+     } catch {
+       // ignore invalid persisted settings
+     }
+@@ -551,6 +569,32 @@ export class PatternManagerService implements OnDestroy {
+     });
+   }
+ 
++  markProjectComplete(): void {
++    this.snapshots.save(
++      this.buildCurrentPattern(),
++      'Antes de marcar como completado'
++    );
++
++    const pattern = this.pattern();
++    const legend = pattern.l as any;
++    const allProgress: Record<string, number> = { ...this.progress() };
++
++    for (let r = 0; r < pattern.g.length; r++) {
++      for (let c = 0; c < pattern.g[r].length; c++) {
++        const def = legend[pattern.g[r][c]];
++        if (!def || def.isBackground) continue;
++        allProgress[`${r},${c}`] = 2;
++      }
++    }
++
++    this.progress.set(allProgress);
++    this._doneStitches.set(this._totalStitches());
++    this.prevPct = 100;
++
++    void this.saveCurrentPattern();
++    this.onComplete();
++  }
++
+   private async initialize(): Promise<void> {
+     if (this.storageMode() === 'local') {
+       this.refreshLocalProjectList();
+diff --git a/src/index.html b/src/index.html
+index 01f1102..6343822 100644
+--- a/src/index.html
++++ b/src/index.html
+@@ -5,7 +5,11 @@
+   <title>Aime Cross Stitch</title>
+   <base href="/">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
++  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+   <link rel="icon" type="image/x-icon" href="favicon.ico">
++  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
++  <link rel="icon" type="image/png" sizes="16x16" href="assets/icon-16.png">
++  <link rel="apple-touch-icon" sizes="192x192" href="assets/icon-192.png">
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+diff --git a/src/styles.scss b/src/styles.scss
+index b18dc82..a23b0cb 100644
+--- a/src/styles.scss
++++ b/src/styles.scss
+@@ -10,6 +10,16 @@ body {
+ }
+ 
+ .app-loading-backdrop.cdk-overlay-backdrop {
+-  background: rgba(17, 17, 27, 0.7);
++  background: rgba(26, 22, 38, 0.75);
+   backdrop-filter: blur(3px);
+ }
++
++@media (prefers-reduced-motion: reduce) {
++  *,
++  *::before,
++  *::after {
++    animation-duration: 0.01ms !important;
++    animation-iteration-count: 1 !important;
++    transition-duration: 0.01ms !important;
++  }
++}

@@ -10,6 +10,16 @@ body {
 }
 
 .app-loading-backdrop.cdk-overlay-backdrop {
-  background: rgba(17, 17, 27, 0.7);
+  background: rgba(26, 22, 38, 0.75);
   backdrop-filter: blur(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

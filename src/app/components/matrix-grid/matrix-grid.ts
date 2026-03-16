@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, computed, HostListener, ElementRef, ViewChild, effect, AfterViewInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, computed, HostListener, ElementRef, ViewChild, effect, AfterViewInit, OnDestroy, untracked } from '@angular/core';
 import { PatternManagerService } from '../../services/pattern-manager';
+import { ViewportState, ViewportStateService } from '../../services/viewport-state.service';
 import { CommonModule } from '@angular/common';
-
-const VIEWPORT_KEY = 'aime_viewport_v1';
 
 @Component({
   selector: 'app-matrix-grid',
@@ -11,6 +10,7 @@ const VIEWPORT_KEY = 'aime_viewport_v1';
   templateUrl: './matrix-grid.html',
   styleUrls: ['./matrix-grid.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [],
   host: {
     '[style.--matrix-cols]': 'cols()',
     '[style.--pixel-size.px]': 'pixelSize()',
@@ -18,12 +18,20 @@ const VIEWPORT_KEY = 'aime_viewport_v1';
 })
 export class MatrixGridComponent implements AfterViewInit, OnDestroy {
   private readonly patternService = inject(PatternManagerService);
+  private readonly viewportState = inject(ViewportStateService);
   @ViewChild('canvasViewport') private canvasViewport?: ElementRef<HTMLElement>;
   @ViewChild('gridContainer') gridContainer!: ElementRef<HTMLElement>;
-  private isRestoring = true;
-  private viewportSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  @ViewChild('panoramicCanvas') panoramicCanvas?: ElementRef<HTMLCanvasElement>;
+  private isAppRestoring = true;
+  private isTransitioning = false;
+  private panoramicActive = false;
+  private normalSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  private panoramicSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  private pixelSizeBeforePanoramic: number | null = null;
+  private pendingRafs: number[] = [];
   private readonly scrollHandler = () => {
-    this.saveViewportDebounced();
+    if (this.isAppRestoring || this.isTransitioning) return;
+    this.debouncedSave(this.panoramicActive ? 'panoramic' : 'normal');
   };
 
   protected readonly matrix = this.patternService.pattern;
@@ -40,6 +48,8 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
   protected readonly animationStyle = this.patternService.animationStyle;
   protected readonly activeStepIndex = this.patternService.activeStepIndex;
   protected readonly optimalSequence = this.patternService.optimalSequence;
+  protected readonly showPanoramicView = this.patternService.showPanoramicView;
+  protected readonly isSimplifiedView = computed(() => this.showPanoramicView());
   protected readonly pathStepMap = computed(() => {
     const map = new Map<string, number>();
     const sequence = this.optimalSequence();
@@ -57,8 +67,89 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
       if (!id) return;
 
       Object.keys(localStorage)
-        .filter((key) => key.startsWith(VIEWPORT_KEY + '_') && key !== `${VIEWPORT_KEY}_${id}`)
+        .filter((key) =>
+          (key.startsWith('aime_viewport_normal_v1_') ||
+            key.startsWith('aime_viewport_panoramic_v1_')) &&
+          !key.endsWith(`_${id}`)
+        )
         .forEach((key) => localStorage.removeItem(key));
+    });
+
+    effect(() => {
+      const active = this.showPanoramicView();
+      this.pendingRafs.forEach((id) => cancelAnimationFrame(id));
+      this.pendingRafs = [];
+
+      if (active === this.panoramicActive) return;
+      this.panoramicActive = active;
+      this.isTransitioning = true;
+
+      if (active) {
+        if (!this.isAppRestoring) {
+          this.saveCurrentViewport('normal');
+        }
+
+        if (this.pixelSizeBeforePanoramic === null) {
+          this.pixelSizeBeforePanoramic = untracked(() =>
+            this.patternService.pixelSize()
+          );
+        }
+
+        const projectId = this.patternService.activeProjectId();
+        const saved = projectId
+          ? this.viewportState.load('panoramic', projectId)
+          : null;
+        const pattern = this.patternService.pattern();
+        const container = this.gridContainer?.nativeElement;
+
+        if (saved) {
+          untracked(() => this.patternService.pixelSize.set(saved.pixelSize));
+        } else if (pattern.m.r && pattern.m.c && container) {
+          const PADDING = 80;
+          const fitByW = Math.floor((container.clientWidth - PADDING) / pattern.m.c);
+          const fitByH = Math.floor((container.clientHeight - PADDING) / pattern.m.r);
+          const fitSize = Math.max(2, Math.min(fitByW, fitByH));
+          untracked(() => this.patternService.pixelSize.set(fitSize));
+        }
+
+        const raf1 = requestAnimationFrame(() => {
+          const raf2 = requestAnimationFrame(() => {
+            if (!this.panoramicActive) return;
+            if (saved) {
+              this.applyViewportState(saved);
+            } else {
+              this.centerGrid();
+            }
+            this.renderPanoramicCanvas();
+            this.isTransitioning = false;
+          });
+          this.pendingRafs.push(raf2);
+        });
+        this.pendingRafs.push(raf1);
+      } else {
+        const restoreSize = this.pixelSizeBeforePanoramic ?? untracked(() =>
+          this.patternService.pixelSize()
+        );
+        this.pixelSizeBeforePanoramic = null;
+        untracked(() => this.patternService.pixelSize.set(restoreSize));
+
+        const projectId = this.patternService.activeProjectId();
+        const saved = projectId
+          ? this.viewportState.load('normal', projectId)
+          : null;
+
+        const raf1 = requestAnimationFrame(() => {
+          const raf2 = requestAnimationFrame(() => {
+            if (this.panoramicActive) return;
+            if (saved) {
+              this.applyViewportState(saved);
+            }
+            this.isTransitioning = false;
+          });
+          this.pendingRafs.push(raf2);
+        });
+        this.pendingRafs.push(raf1);
+      }
     });
   }
 
@@ -74,7 +165,9 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.viewportSaveTimer) clearTimeout(this.viewportSaveTimer);
+    this.pendingRafs.forEach((id) => cancelAnimationFrame(id));
+    if (this.normalSaveTimer) clearTimeout(this.normalSaveTimer);
+    if (this.panoramicSaveTimer) clearTimeout(this.panoramicSaveTimer);
     const container = this.gridContainer?.nativeElement;
     if (container) {
       container.removeEventListener('scroll', this.scrollHandler);
@@ -82,79 +175,127 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
     window.removeEventListener('scroll', this.scrollHandler);
   }
 
-  private saveViewportDebounced(): void {
-    if (this.viewportSaveTimer) clearTimeout(this.viewportSaveTimer);
-    this.viewportSaveTimer = setTimeout(() => {
-      this.saveViewport();
-    }, 350);
+  private debouncedSave(mode: 'normal' | 'panoramic'): void {
+    if (this.isAppRestoring || this.isTransitioning) return;
+
+    if (mode === 'normal') {
+      if (this.normalSaveTimer) clearTimeout(this.normalSaveTimer);
+      this.normalSaveTimer = setTimeout(() => this.saveCurrentViewport('normal'), 350);
+    } else {
+      if (this.panoramicSaveTimer) clearTimeout(this.panoramicSaveTimer);
+      this.panoramicSaveTimer = setTimeout(() => this.saveCurrentViewport('panoramic'), 350);
+    }
   }
 
-  private saveViewport(): void {
-    if (this.isRestoring) {
-      return;
-    }
-
+  private saveCurrentViewport(mode: 'normal' | 'panoramic'): void {
     const projectId = this.patternService.activeProjectId();
     if (!projectId) return;
     const container = this.gridContainer?.nativeElement;
     if (!container) return;
 
-    const state = {
+    this.viewportState.save(mode, {
       scrollLeft: container.scrollLeft,
       scrollTop: container.scrollTop,
       windowScrollX: window.scrollX,
       windowScrollY: window.scrollY,
       pixelSize: this.patternService.pixelSize(),
       projectId,
-    };
-
-    localStorage.setItem(`${VIEWPORT_KEY}_${projectId}`, JSON.stringify(state));
+    });
   }
 
-  private restoreViewport(): void {
+  private applyViewportState(saved: ViewportState): void {
+    const container = this.gridContainer?.nativeElement;
+    if (!container) return;
+
+    const savedSize = saved.pixelSize ?? this.patternService.pixelSize();
+    const currentSize = this.patternService.pixelSize();
+    const ratio = currentSize / savedSize;
+
+    container.scrollLeft = Math.round(saved.scrollLeft * ratio);
+    container.scrollTop = Math.round(saved.scrollTop * ratio);
+
+    if (saved.windowScrollX || saved.windowScrollY) {
+      window.scrollTo({
+        left: Math.round((saved.windowScrollX ?? 0) * ratio),
+        top: Math.round((saved.windowScrollY ?? 0) * ratio),
+        behavior: 'instant' as ScrollBehavior,
+      });
+    }
+  }
+
+  private renderPanoramicCanvas(): void {
+    const canvas = this.panoramicCanvas?.nativeElement;
+    if (!canvas) return;
+
+    const pattern = this.patternService.pattern();
+    const legend = pattern.l as Record<string, { b?: string; isBackground?: boolean }>;
+    const rows = pattern.m.r;
+    const cols = pattern.m.c;
+    if (!rows || !cols) return;
+
+    const container = this.gridContainer?.nativeElement;
+    const PADDING = 48;
+    const availableW = (container?.clientWidth ?? window.innerWidth) - PADDING * 2;
+    const availableH = (container?.clientHeight ?? window.innerHeight) - PADDING * 2;
+
+    const cellSize = Math.max(
+      2,
+      Math.min(
+        Math.floor(availableW / cols),
+        Math.floor(availableH / rows)
+      )
+    );
+
+    const canvasW = cols * cellSize;
+    const canvasH = rows * cellSize;
+
+    canvas.width = canvasW;
+    canvas.height = canvasH;
+    canvas.style.width = `${canvasW}px`;
+    canvas.style.height = `${canvasH}px`;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvasW, canvasH);
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const key = pattern.g[row]?.[col];
+        if (!key) continue;
+        const def = legend[key];
+        if (!def || def.isBackground) continue;
+
+        ctx.fillStyle = def.b ?? '#ccc';
+        ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+      }
+    }
+  }
+
+  private restoreViewport(mode: 'normal' | 'panoramic'): void {
     const projectId = this.patternService.activeProjectId();
     if (!projectId) return;
 
-    const raw = localStorage.getItem(`${VIEWPORT_KEY}_${projectId}`);
-    if (!raw) return;
-
-    try {
-      const state = JSON.parse(raw) as {
-        scrollLeft: number;
-        scrollTop: number;
-        windowScrollX?: number;
-        windowScrollY?: number;
-        pixelSize: number;
-      };
-
-      const container = this.gridContainer?.nativeElement;
-      if (!container) return;
-
-      const savedPixelSize = state.pixelSize ?? this.patternService.pixelSize();
-      const currentPixelSize = this.patternService.pixelSize();
-      const ratio = currentPixelSize / savedPixelSize;
-
-      const targetLeft = Math.round(state.scrollLeft * ratio);
-      const targetTop = Math.round(state.scrollTop * ratio);
-
-      container.scrollLeft = targetLeft;
-      container.scrollTop = targetTop;
-
-      if (state.windowScrollY || state.windowScrollX) {
-        window.scrollTo({
-          left: state.windowScrollX ?? 0,
-          top: state.windowScrollY ?? 0,
-          behavior: 'auto',
-        });
-      }
-    } catch {
-      // ignore corrupt state
+    const saved = this.viewportState.load(mode, projectId);
+    if (!saved) {
+      if (mode === 'panoramic') this.centerGrid();
+      return;
     }
+
+    this.applyViewportState(saved);
+  }
+
+  private centerGrid(): void {
+    const container = this.gridContainer?.nativeElement;
+    if (!container) return;
+    container.scrollLeft = Math.max(0,
+      (container.scrollWidth - container.clientWidth) / 2);
+    container.scrollTop = Math.max(0,
+      (container.scrollHeight - container.clientHeight) / 2);
   }
 
   private waitAndRestore(attempts: number): void {
     if (attempts > 60) {
-      this.isRestoring = false;
+      this.isAppRestoring = false;
       return;
     }
 
@@ -195,8 +336,8 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        this.restoreViewport();
-        this.isRestoring = false;
+        this.restoreViewport('normal');
+        this.isAppRestoring = false;
       });
     });
   }
@@ -223,9 +364,11 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
     if (hiddenSymbols.has(cell)) {
       return {
         'background-color': def.b,
-        'opacity': '0',
-        'visibility': 'hidden',
-        'pointer-events': 'none',
+        'color': 'transparent',
+        'opacity': '1',
+        'filter': 'none',
+        'background-image': 'none',
+        'border-color': 'transparent',
       };
     }
 
@@ -258,11 +401,17 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
     return this.progress()[`${row},${col}`] ?? 0;
   }
 
+  protected isBackgroundCell(cell: string): boolean {
+    const def = this.patternService.pattern().l[cell] as any;
+    return !def || !!def.isBackground;
+  }
+
   protected getSymbol(cell: string, row: number, col: number): string {
     const p = this.matrix();
     const def = p.l[cell] as any;
     if (!def || def.isBackground) return '';
     if (this.patternService.hiddenSymbols().has(cell)) return '';
+    if (this.isSimplifiedView()) return '';
     const step = this.progress()[`${row},${col}`] ?? 0;
     if (step === 1) return '';
     return def.s ?? '';

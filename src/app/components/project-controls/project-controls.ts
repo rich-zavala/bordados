@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { PathAnimationStyle, PatternManagerService } from '../../services/pattern-manager';
 import { ProjectIngestorService } from '../../services/project-ingestor.service';
 import { ColorEditorComponent } from '../color-editor/color-editor';
+import { panelAnimation, tabContentAnimation, celebrationAnimation, statsListAnimation } from '../../animations';
 
 type Tab = 'project' | 'statistics' | 'config' | 'aime';
 
@@ -15,10 +16,11 @@ type Tab = 'project' | 'statistics' | 'config' | 'aime';
   standalone: true,
   imports: [CommonModule, FormsModule, ColorEditorComponent],
   templateUrl: './project-controls.html',
-  styleUrls: ['./project-controls.scss']
+  styleUrls: ['./project-controls.scss'],
+  animations: [panelAnimation, tabContentAnimation, celebrationAnimation, statsListAnimation]
 })
 export class ProjectControlsComponent implements OnDestroy {
-  private manager = inject(PatternManagerService);
+  readonly manager = inject(PatternManagerService);
   private ingestor = inject(ProjectIngestorService);
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
@@ -38,7 +40,7 @@ export class ProjectControlsComponent implements OnDestroy {
   showOptimalPath = this.manager.showOptimalPath;
   animationStyle = this.manager.animationStyle;
   currentSectorStats = this.manager.currentSectorStats;
-  readonly circumference = 2 * Math.PI * 26;
+  readonly circumference = 2 * Math.PI * 28;
 
   isOpen = signal<boolean>(false);
   activeTab = signal<Tab>('project');
@@ -56,7 +58,46 @@ export class ProjectControlsComponent implements OnDestroy {
   private confettiActive = false;
   private confettiFrame: number | null = null;
   private keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') this.isOpen.update(v => !v);
+    const tag = (e.target as HTMLElement | null)?.tagName?.toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+    switch (e.key) {
+      case 'Escape':
+        if (this.manager.showPanoramicView()) {
+          this.manager.showPanoramicView.set(false);
+        } else {
+          this.isOpen.update(v => !v);
+        }
+        break;
+      case 'p':
+      case 'P':
+        this.manager.showPanoramicView.update(v => !v);
+        break;
+      case 's':
+      case 'S':
+        this.isOpen.set(true);
+        this.activeTab.set('statistics');
+        break;
+      case 'c':
+      case 'C':
+        this.isOpen.set(true);
+        this.activeTab.set('config');
+        break;
+      case ' ':
+        e.preventDefault();
+        this.manager.toggleOptimalPath();
+        break;
+      case '+':
+      case '=':
+        this.manager.setPixelSize(this.manager.pixelSize() + 2);
+        break;
+      case '-':
+        this.manager.setPixelSize(this.manager.pixelSize() - 2);
+        break;
+      case '?':
+        this.manager.showHotkeys.update(v => !v);
+        break;
+    }
   };
   private completeHandler = () => this.launchConfetti();
   private colorCompleteHandler = (e: Event) => {
@@ -198,6 +239,11 @@ export class ProjectControlsComponent implements OnDestroy {
 
   exportCurrent() {
     this.manager.exportProject();
+  }
+
+  confirmMarkComplete(): void {
+    if (!confirm('¿Marcar todo el proyecto como terminado? Puedes deshacer esto desde el editor de colores.')) return;
+    this.manager.markProjectComplete();
   }
 
   async onFcjsonSelected(event: any) {

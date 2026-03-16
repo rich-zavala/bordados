@@ -1,6 +1,7 @@
 import { Injectable, signal, inject, effect, OnDestroy, computed } from '@angular/core';
 import { PatternMatrix, ColorConfiguration, SymbolDefinition } from '../models/pattern-matrix.model';
 import { CloudPatternRepository } from '../repositories/cloud-pattern.repository';
+import { SnapshotService } from './snapshot.service';
 
 export type HighlightStyle = {
   name: string;
@@ -82,6 +83,7 @@ export type PatternDashboardStats = {
 @Injectable({ providedIn: 'root' })
 export class PatternManagerService implements OnDestroy {
   private readonly repository = inject(CloudPatternRepository);
+  private readonly snapshots = inject(SnapshotService);
   private inProgressKey = signal<string | null>(
     localStorage.getItem(ACTIVE_SECTOR_KEY) ?? localStorage.getItem(LEGACY_ACTIVE_SECTOR_KEY)
   );
@@ -113,6 +115,10 @@ export class PatternManagerService implements OnDestroy {
   readonly activeHighlightStyle = signal(DEFAULT_HIGHLIGHT_STYLE_INDEX);
   readonly showOptimalPath = signal<boolean>(
     localStorage.getItem('show_path') === 'true'
+  );
+  readonly showPanoramicView = signal(false);
+  readonly showHotkeys = signal<boolean>(
+    localStorage.getItem('show_hotkeys') !== 'false'
   );
   readonly highlightedCells = signal<Set<string>>(new Set());
   readonly animationStyle = signal<PathAnimationStyle>(
@@ -285,12 +291,14 @@ export class PatternManagerService implements OnDestroy {
         hiddenSymbols: Array.from(this.hiddenSymbols()),
         showOptimalPath: this.showOptimalPath(),
         animationStyle: this.animationStyle(),
+        showHotkeys: this.showHotkeys(),
       };
 
       localStorage.setItem('bordados_settings', JSON.stringify(settings));
       localStorage.setItem('storageMode', settings.storageMode);
       localStorage.setItem('show_path', String(settings.showOptimalPath));
       localStorage.setItem('anim_style', settings.animationStyle);
+      localStorage.setItem('show_hotkeys', String(settings.showHotkeys));
 
       if (this.storageMode() === 'cloud') {
         if (this.settingsTimer) clearTimeout(this.settingsTimer);
@@ -475,6 +483,7 @@ export class PatternManagerService implements OnDestroy {
         hiddenSymbols?: string[];
         showOptimalPath?: boolean;
         animationStyle?: PathAnimationStyle;
+        showHotkeys?: boolean;
       };
 
       if (typeof parsed.pixelSize === 'number') {
@@ -501,6 +510,10 @@ export class PatternManagerService implements OnDestroy {
         this.animationStyle.set(parsed.animationStyle);
       }
 
+      if (typeof parsed.showHotkeys === 'boolean') {
+        this.showHotkeys.set(parsed.showHotkeys);
+      }
+
       const showPathRaw = localStorage.getItem('show_path');
       if (showPathRaw === 'true' || showPathRaw === 'false') {
         this.showOptimalPath.set(showPathRaw === 'true');
@@ -509,6 +522,11 @@ export class PatternManagerService implements OnDestroy {
       const savedAnimStyle = localStorage.getItem('anim_style');
       if (savedAnimStyle === 'ghost' || savedAnimStyle === 'numbers') {
         this.animationStyle.set(savedAnimStyle);
+      }
+
+      const savedHotkeys = localStorage.getItem('show_hotkeys');
+      if (savedHotkeys === 'true' || savedHotkeys === 'false') {
+        this.showHotkeys.set(savedHotkeys === 'true');
       }
     } catch {
       // ignore invalid persisted settings
@@ -549,6 +567,32 @@ export class PatternManagerService implements OnDestroy {
       }
       return next;
     });
+  }
+
+  markProjectComplete(): void {
+    this.snapshots.save(
+      this.buildCurrentPattern(),
+      'Antes de marcar como completado'
+    );
+
+    const pattern = this.pattern();
+    const legend = pattern.l as any;
+    const allProgress: Record<string, number> = { ...this.progress() };
+
+    for (let r = 0; r < pattern.g.length; r++) {
+      for (let c = 0; c < pattern.g[r].length; c++) {
+        const def = legend[pattern.g[r][c]];
+        if (!def || def.isBackground) continue;
+        allProgress[`${r},${c}`] = 2;
+      }
+    }
+
+    this.progress.set(allProgress);
+    this._doneStitches.set(this._totalStitches());
+    this.prevPct = 100;
+
+    void this.saveCurrentPattern();
+    this.onComplete();
   }
 
   private async initialize(): Promise<void> {

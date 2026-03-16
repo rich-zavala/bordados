@@ -1,0 +1,10 @@
+@if (manager.showHotkeys()) {
+  <div class="hotkeys-overlay" role="complementary" aria-label="Atajos de teclado">
+    @for (hk of hotkeys; track hk.key) {
+      <div class="hotkey-row">
+        <kbd class="key">{{ hk.key }}</kbd>
+        <span class="key-label">{{ hk.label }}</span>
+      </div>
+    }
+  </div>
+}

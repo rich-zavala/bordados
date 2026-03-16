@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#1a1626"/>
+  <polygon points="32,6 54,22 54,42 32,58 10,42 10,22" fill="#2d2640" stroke="#c084fc" stroke-width="1.5"/>
+  <polygon points="32,6 54,22 32,26 10,22" fill="#7c3aed" opacity=".7"/>
+  <polygon points="32,26 54,22 54,42 32,58" fill="#4f46e5" opacity=".6"/>
+  <polygon points="32,26 10,22 10,42 32,58" fill="#6d28d9" opacity=".65"/>
+  <polygon points="32,6 43,22 32,26 21,22" fill="#a855f7" opacity=".9">
+    <animate attributeName="opacity" values=".9;1;.9" dur="2.4s" repeatCount="indefinite"/>
+  </polygon>
+  <line x1="32" y1="6"  x2="32" y2="26" stroke="#e9d5ff" stroke-width=".8" opacity=".6"/>
+  <line x1="10" y1="22" x2="54" y2="22" stroke="#e9d5ff" stroke-width=".8" opacity=".4"/>
+  <line x1="10" y1="22" x2="32" y2="26" stroke="#c4b5fd" stroke-width=".6" opacity=".5"/>
+  <line x1="54" y1="22" x2="32" y2="26" stroke="#c4b5fd" stroke-width=".6" opacity=".5"/>
+  <line x1="10" y1="42" x2="32" y2="26" stroke="#818cf8" stroke-width=".6" opacity=".4"/>
+  <line x1="54" y1="42" x2="32" y2="26" stroke="#818cf8" stroke-width=".6" opacity=".4"/>
+  <polygon points="28,14 30,18 32,14 34,18 36,14" fill="#f9a8d4" opacity=".8">
+    <animate attributeName="opacity" values=".8;0.2;.8" dur="1.8s" repeatCount="indefinite"/>
+  </polygon>
+</svg>

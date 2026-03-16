@@ -1,16 +1,19 @@
 import { Component, signal, inject, effect } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
 import { MatrixGridComponent } from './components/matrix-grid/matrix-grid';
+import { HotkeysOverlayComponent } from './components/hotkeys-overlay/hotkeys-overlay';
 import { ProjectControlsComponent } from './components/project-controls/project-controls';
 import { PatternManagerService } from './services/pattern-manager';
 import { LoadingService } from './services/loading.service';
+import { chipAnimation, modeChipAnimation } from './animations';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [NgComponentOutlet],
+  imports: [NgComponentOutlet, HotkeysOverlayComponent],
   templateUrl: './app.html',
-  styleUrls: ['./app.scss']
+  styleUrls: ['./app.scss'],
+  animations: [chipAnimation, modeChipAnimation]
 })
 export class App {
   protected readonly patternManager = inject(PatternManagerService);

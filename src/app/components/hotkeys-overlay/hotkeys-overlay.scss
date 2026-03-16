@@ -1,0 +1,46 @@
+.hotkeys-overlay {
+  position: fixed;
+  bottom: 100px;
+  left: 16px;
+  background: rgba(26, 22, 38, 0.88);
+  backdrop-filter: blur(8px);
+  border: 0.5px solid rgba(192, 132, 252, 0.2);
+  border-radius: 12px;
+  padding: 10px 14px;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+  animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hotkey-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.key {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  background: rgba(192, 132, 252, 0.15);
+  border: 0.5px solid rgba(192, 132, 252, 0.3);
+  border-radius: 5px;
+  padding: 2px 7px;
+  color: #e2d9f3;
+  min-width: 52px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.key-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}

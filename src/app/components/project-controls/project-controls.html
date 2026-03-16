@@ -2,6 +2,7 @@
 
 @if (celebrationMessage()) {
   <div class="color-celebration"
+       @celebration
        [style.background]="celebrationColor()"
        [style.color]="getContrastColor(celebrationColor())"
        role="status"
@@ -11,47 +12,53 @@
 }
 
 <div class="floating-container">
-  <div class="fab-wrapper">
-
-    <div class="fab-tooltip">
-      @if (overallProgress(); as data) {
-        {{ data.done }} de {{ data.total }} puntadas · {{ data.overallPercent }}%
-      } @else {
-        Sin proyecto cargado
-      }
-    </div>
-
-    <button class="fab" (click)="isOpen.set(!isOpen())" [class.is-open]="isOpen()">
-      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx="32" cy="32" r="26"
+  <button class="fab" (click)="isOpen.set(!isOpen())" [class.is-open]="isOpen()">
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
+         style="position:absolute;inset:0;width:100%;height:100%">
+      <defs>
+        <linearGradient id="fab-arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#a78bfa"/>
+          <stop offset="100%" stop-color="#f9a8d4"/>
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="32" r="28"
+        fill="none"
+        stroke="rgba(255,255,255,0.08)"
+        stroke-width="3"/>
+      @if (stats(); as data) {
+        <circle cx="32" cy="32" r="28"
           fill="none"
-          stroke="rgba(255,255,255,0.2)"
-          stroke-width="4"/>
-        @if (overallProgress(); as data) {
-          <circle cx="32" cy="32" r="26"
-            fill="none"
-            stroke="white"
-            stroke-width="4"
-            stroke-linecap="round"
-            [attr.stroke-dasharray]="circumference"
-            [attr.stroke-dashoffset]="getOffset(data.overallPercent)"
-            transform="rotate(-90 32 32)"
-            style="transition: stroke-dashoffset 0.5s cubic-bezier(.4,0,.2,1);"/>
-        }
-      </svg>
-
-      @if (overallProgress(); as data) {
-        <span class="fab-percent">
-          {{ isOpen() ? '✕' : data.overallPercent + '%' }}
-        </span>
-      } @else {
-        <span class="fab-empty">{{ isOpen() ? '✕' : '–' }}</span>
+          stroke="url(#fab-arc-grad)"
+          stroke-width="3"
+          stroke-linecap="round"
+          [attr.stroke-dasharray]="circumference"
+          [attr.stroke-dashoffset]="getOffset(data.overallPercent)"
+          transform="rotate(-90 32 32)"
+          style="transition: stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)"/>
       }
-    </button>
+      <!-- diamond facets -->
+      <polygon points="32,10 50,24 50,40 32,54 14,40 14,24" fill="#2d2050" stroke="#c084fc" stroke-width="1.2"/>
+      <polygon points="32,10 50,24 32,28 14,24" fill="#7c3aed" opacity=".85"/>
+      <polygon points="32,28 50,24 50,40 32,54" fill="#4f46e5" opacity=".7"/>
+      <polygon points="32,28 14,24 14,40 32,54" fill="#6d28d9" opacity=".75"/>
+      <polygon points="32,10 41,24 32,28 23,24" fill="#a855f7" opacity=".95"/>
+      <line x1="32" y1="10" x2="32" y2="28" stroke="#e9d5ff" stroke-width=".8" opacity=".5"/>
+      <line x1="14" y1="24" x2="50" y2="24" stroke="#e9d5ff" stroke-width=".8" opacity=".35"/>
+      <!-- sparkle -->
+      <polygon points="30,16 31,19 32,16 33,19 34,16" fill="#f9a8d4" opacity=".9">
+        <animate attributeName="opacity" values=".9;.2;.9" dur="1.8s" repeatCount="indefinite"/>
+      </polygon>
+    </svg>
 
-  </div>
+    @if (isOpen()) {
+      <span class="fab-close">✕</span>
+    } @else if (stats(); as data) {
+      <span class="fab-percent">{{ data.overallPercent }}%</span>
+    }
+  </button>
 
-  <div class="panel" *ngIf="isOpen()">
+  @if (isOpen()) {
+  <div class="panel" @panel>
     <div class="tabs">
       <button [class.active]="activeTab() === 'project'"    (click)="activeTab.set('project')">📁 Proyecto</button>
       <button [class.active]="activeTab() === 'statistics'" (click)="activeTab.set('statistics')">📊 Stats</button>
@@ -60,7 +67,7 @@
     </div>
 
     <!-- PROJECT -->
-    <div class="tab-content" *ngIf="activeTab() === 'project'">
+    <div class="tab-content" *ngIf="activeTab() === 'project'" @tabContent>
       <div class="field">
         <label>Proyecto activo</label>
         <select [ngModel]="activeId()" (ngModelChange)="onSelect($event)">
@@ -107,6 +114,17 @@
         </div>
       </div>
 
+      @if (stats(); as data) {
+        @if (data.overallPercent < 100) {
+          <hr />
+          <button class="btn-complete" (click)="confirmMarkComplete()">
+            ¡Marcar como terminado! 🎉
+          </button>
+        } @else {
+          <div class="complete-badge">✦ Proyecto completado ✦</div>
+        }
+      }
+
       <hr />
       <button class="text-btn" (click)="editorOpen.set(true)">🎨 Editor de colores</button>
 
@@ -116,7 +134,7 @@
     </div>
 
     <!-- STATISTICS -->
-    <div class="tab-content" *ngIf="activeTab() === 'statistics'">
+    <div class="tab-content" *ngIf="activeTab() === 'statistics'" @tabContent>
       <div class="stats-container">
         @if (stats(); as data) {
           <div class="overall-progress">
@@ -134,8 +152,8 @@
 
           <label class="stats-label">Progreso por Color</label>
           <div class="stats-list">
-            @for (s of data.symbols; track s.key) {
-              <div class="stats-row">
+            @for (s of data.symbols; track s.key; let i = $index) {
+              <div class="stats-row" [style.--row-index]="i">
                 <div class="swatch" [style.background]="s.color">
                   {{ s.char }}
                 </div>
@@ -158,7 +176,7 @@
     </div>
 
     <!-- CONFIG -->
-    <div class="tab-content config-tab" *ngIf="activeTab() === 'config'">
+    <div class="tab-content config-tab" *ngIf="activeTab() === 'config'" @tabContent>
       <div class="config-sidebar">
         <div class="config-header">
           <h3>Configuración</h3>
@@ -170,6 +188,16 @@
             <div class="storage-switch">
               <button [class.active]="storageMode() === 'local'" (click)="setStorage('local')">Local</button>
               <button [class.active]="storageMode() === 'cloud'" (click)="setStorage('cloud')">Nube</button>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <label>Atajos de teclado</label>
+            <div class="storage-switch">
+              <button [class.active]="manager.showHotkeys()"
+                      (click)="manager.showHotkeys.set(true)">Visibles</button>
+              <button [class.active]="!manager.showHotkeys()"
+                      (click)="manager.showHotkeys.set(false)">Ocultos</button>
             </div>
           </div>
 
@@ -246,7 +274,7 @@
     </div>
 
     <!-- AIME -->
-    <div class="tab-content aime-tab" *ngIf="activeTab() === 'aime'">
+    <div class="tab-content aime-tab" *ngIf="activeTab() === 'aime'" @tabContent>
       <div class="letter-scene" [class.is-open]="letterOpen()">
         <div class="envelope" (click)="!letterOpen() && letterOpen.set(true)">
           <div class="envelope-flap"></div>
@@ -272,4 +300,5 @@
     </div>
 
   </div>
+  }
 </div>

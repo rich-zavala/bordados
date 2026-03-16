@@ -1,8 +1,13 @@
 <ng-container [ngComponentOutlet]="matrixGridComponent"></ng-container>
 <ng-container [ngComponentOutlet]="projectControlsComponent"></ng-container>
+<app-hotkeys-overlay></app-hotkeys-overlay>
+
+@if (patternManager.showPanoramicView()) {
+	<div class="mode-chip" @modeChip>Vista panorámica — pulsa P o Esc para salir</div>
+}
 
 @if (patternManager.statusMessage()) {
-	<div class="status-chip" role="status" aria-live="polite">
+	<div class="status-chip" @chip role="status" aria-live="polite">
 		{{ patternManager.statusMessage() }}
 	</div>
 }
