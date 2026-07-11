@@ -61,6 +61,50 @@ const DEFAULT_HIGHLIGHT_STYLE_INDEX = Math.max(
   FINAL_STYLES.findIndex((style) => style.name === DEFAULT_HIGHLIGHT_STYLE_NAME),
 );
 
+const createLocalStorageStub = (): Storage => {
+  const store = new Map<string, string>();
+  return {
+    get length(): number {
+      return store.size;
+    },
+    clear(): void {
+      store.clear();
+    },
+    getItem(key: string): string | null {
+      return store.has(key) ? store.get(key)! : null;
+    },
+    key(index: number): string | null {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string): void {
+      store.delete(key);
+    },
+    setItem(key: string, value: string): void {
+      store.set(key, value);
+    },
+  };
+};
+
+const ensureStorageAvailability = (): Storage => {
+  try {
+    const existing = globalThis.localStorage;
+    if (existing) return existing;
+  } catch {
+    // Ignore environments where browser storage is unavailable.
+  }
+
+  const stub = createLocalStorageStub();
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    writable: true,
+    value: stub,
+  });
+
+  return stub;
+};
+
+ensureStorageAvailability();
+
 export type StorageMode = 'cloud' | 'local';
 
 export type SymbolProgressStat = {

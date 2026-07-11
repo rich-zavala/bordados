@@ -361,14 +361,25 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
       return { 'background-color': 'transparent', 'pointer-events': 'none' };
     }
 
+    const iconStyle = def.icon
+      ? {
+          'background-image': `url('${def.icon}')`,
+          'background-size': 'cover',
+          'background-repeat': 'no-repeat',
+          'background-position': 'center',
+        }
+      : {
+          'background-image': 'none',
+        };
+
     if (hiddenSymbols.has(cell)) {
       return {
         'background-color': def.b,
         'color': 'transparent',
         'opacity': '1',
         'filter': 'none',
-        'background-image': 'none',
         'border-color': 'transparent',
+        ...iconStyle,
       };
     }
 
@@ -378,6 +389,7 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
       'background-color': def.b,
       'color': def.c,
       'opacity': '0.5',
+      ...iconStyle,
     };
 
     if (step === 1) {
@@ -385,6 +397,7 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
         'background-color': def.b,
         'color': def.c,
         'opacity': '0.85',
+        ...iconStyle,
       };
     }
 
@@ -393,7 +406,7 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
       'color': def.c,
       'opacity': '1',
       'filter': 'none',
-      'background-image': 'none',
+      ...iconStyle,
     };
   }
 
@@ -412,6 +425,7 @@ export class MatrixGridComponent implements AfterViewInit, OnDestroy {
     if (!def || def.isBackground) return '';
     if (this.patternService.hiddenSymbols().has(cell)) return '';
     if (this.isSimplifiedView()) return '';
+    if (def.icon) return '';
     const step = this.progress()[`${row},${col}`] ?? 0;
     if (step === 1) return '';
     return def.s ?? '';
